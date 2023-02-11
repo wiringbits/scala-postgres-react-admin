@@ -1,0 +1,9 @@
+target/
+.idea/
+.bsp/
+.vscode/
+.metals/**
+*.iml
+logs/
+admin/build/
+web/build/
