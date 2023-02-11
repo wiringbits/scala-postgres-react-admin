@@ -110,12 +110,12 @@ lazy val baseLibSettings: Project => Project = _.settings(
 )
 
 // The common stuff for the server/client modules
-lazy val webappCommon = (crossProject(JSPlatform, JVMPlatform) in file("webapp-common"))
+lazy val spraCommon = (crossProject(JSPlatform, JVMPlatform) in file("spra-common"))
   .configure(baseLibSettings)
   .settings(
     scalaVersion := "2.13.8",
     crossScalaVersions := Seq("2.13.8", "3.1.2"),
-    name := "webapp-common"
+    name := "spra-common"
   )
   .jsConfigure(_.enablePlugins(ScalaJSPlugin, ScalaJSBundlerPlugin))
   .jvmSettings(
@@ -134,14 +134,14 @@ lazy val webappCommon = (crossProject(JSPlatform, JVMPlatform) in file("webapp-c
     )
   )
 
-// Just the API side for the admin-data-explorer modules
-lazy val adminDataExplorerApi = (crossProject(JSPlatform, JVMPlatform) in file("admin-data-explorer-api"))
+// Just the API side for the SPRA modules
+lazy val spraApi = (crossProject(JSPlatform, JVMPlatform) in file("spra-api"))
   .configure(baseLibSettings)
-  .dependsOn(webappCommon)
+  .dependsOn(spraCommon)
   .settings(
     scalaVersion := "2.13.8",
     crossScalaVersions := Seq("2.13.8", "3.1.2"),
-    name := "admin-data-explorer-api"
+    name := "spra-api"
   )
   .jsConfigure(_.enablePlugins(ScalaJSPlugin, ScalaJSBundlerPlugin))
   .jvmSettings(
@@ -160,15 +160,15 @@ lazy val adminDataExplorerApi = (crossProject(JSPlatform, JVMPlatform) in file("
     )
   )
 
-/** Includes the specific stuff to run the data explorer server side (play-specific)
+/** Includes the specific stuff to run the SPRA server side (play-specific)
   */
-lazy val adminDataExplorerPlayServer = (project in file("admin-data-explorer-play-server"))
-  .dependsOn(adminDataExplorerApi.jvm, webappCommon.jvm)
+lazy val spraPlayServer = (project in file("spra-play-server"))
+  .dependsOn(spraApi.jvm, spraCommon.jvm)
   .configure(baseServerSettings, playSettings)
   .settings(
     scalaVersion := "2.13.8",
     crossScalaVersions := Seq("2.13.8"),
-    name := "admin-data-explorer-play-server",
+    name := "spra-play-server",
     fork := true,
     Test / fork := true, // allows for graceful shutdown of containers once the tests have finished running
     libraryDependencies ++= Seq(
@@ -188,14 +188,14 @@ lazy val adminDataExplorerPlayServer = (project in file("admin-data-explorer-pla
 
 lazy val root = (project in file("."))
   .aggregate(
-    webappCommon.jvm,
-    webappCommon.js,
-    adminDataExplorerApi.jvm,
-    adminDataExplorerApi.js,
-    adminDataExplorerPlayServer
+    spraCommon.jvm,
+    spraCommon.js,
+    spraApi.jvm,
+    spraApi.js,
+    spraPlayServer
   )
   .settings(
-    name := "wiringbits-webapp-utils",
+    name := "scala-postgres-react-admin",
     publish := {},
     publishLocal := {},
     publish / skip := true
