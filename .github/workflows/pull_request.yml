@@ -33,16 +33,7 @@ jobs:
         run: sbt scalafmtCheckAll
 
       - name: Compile
-        run: CI=true sbt compile
+        run: CI=true sbt +compile
 
       - name: Run tests
-        run: CI=true sbt test
-
-      - name: Prepare admin build
-        run: sbt admin/build
-
-      - name: Prepare web build
-        run: sbt web/build
-
-      - name: Prepare server build
-        run: sbt server/dist
+        run: CI=true sbt +test
