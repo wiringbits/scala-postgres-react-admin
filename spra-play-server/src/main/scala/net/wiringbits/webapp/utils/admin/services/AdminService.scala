@@ -69,7 +69,8 @@ class AdminService @Inject() (
             name = settings.tableName,
             columns = columns,
             primaryKeyName = settings.primaryKeyField,
-            canBeDeleted = settings.canBeDeleted
+            canBeDeleted = settings.canBeDeleted,
+            joinTables = settings.joinTables
           )
         }
       }

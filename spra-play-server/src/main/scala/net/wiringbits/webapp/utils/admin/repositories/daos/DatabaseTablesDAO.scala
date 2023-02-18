@@ -79,7 +79,6 @@ object DatabaseTablesDAO {
       queryParameters: QueryParameters,
       baseUrl: String
   )(implicit conn: Connection): List[TableRow] = {
-    val dateRegex = StringRegex.dateRegex
     val limit = queryParameters.pagination.end - queryParameters.pagination.start
     val offset = queryParameters.pagination.start
     val tableName = settings.tableName
@@ -89,11 +88,14 @@ object DatabaseTablesDAO {
     val conditionsSql = queryParameters.filters
       .map { case FilterParameter(filterField, filterValue) =>
         filterValue match {
-          case dateRegex(_, _, _) =>
+          case StringRegex.dateRegex(_, _, _) =>
             s"DATE($filterField) = ?"
 
           case _ =>
-            if (filterValue.toIntOption.isDefined || filterValue.toDoubleOption.isDefined)
+            if (
+              filterValue.toIntOption.isDefined || filterValue.toDoubleOption.isDefined || StringRegex.uuidRegex
+                .matches(filterValue)
+            )
               s"$filterField = ?"
             else
               s"$filterField LIKE ?"
@@ -116,9 +118,12 @@ object DatabaseTablesDAO {
         val sqlIndex = index + 1
 
         filterValue match {
-          case dateRegex(year, month, day) =>
+          case StringRegex.dateRegex(year, month, day) =>
             val parsedDate = LocalDate.of(year.toInt, month.toInt, day.toInt)
             preparedStatement.setDate(sqlIndex, Date.valueOf(parsedDate))
+
+          case StringRegex.uuidRegex() =>
+            preparedStatement.setObject(sqlIndex, UUID.fromString(filterValue))
 
           case _ =>
             if (filterValue.toIntOption.isDefined)
