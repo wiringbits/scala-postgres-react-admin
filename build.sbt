@@ -186,13 +186,51 @@ lazy val spraPlayServer = (project in file("spra-play-server"))
     )
   )
 
+lazy val bundlerSettings: Project => Project =
+  _.settings(
+    Compile / fastOptJS / webpackExtraArgs += "--mode=development",
+    Compile / fullOptJS / webpackExtraArgs += "--mode=production",
+    Compile / fastOptJS / webpackDevServerExtraArgs += "--mode=development",
+    Compile / fullOptJS / webpackDevServerExtraArgs += "--mode=production"
+  )
+
+lazy val spraWeb = (project in file("spra-web"))
+  .dependsOn(spraApi.js)
+  .configure(bundlerSettings, baseLibSettings)
+  .configure(_.enablePlugins(ScalaJSPlugin, ScalaJSBundlerPlugin))
+  .settings(
+    scalaVersion := "2.13.8",
+    crossScalaVersions := Seq("2.13.8", "3.1.2"),
+    name := "spra-web",
+    Test / fork := false, // sjs needs this to run tests
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scala-js-macrotask-executor" % "1.0.0",
+      "me.shadaj" %%% "slinky-core" % "0.7.3",
+      "me.shadaj" %%% "slinky-web" % "0.7.3"
+    ),
+    Compile / npmDependencies ++= Seq(
+      "react" -> "17.0.0",
+      "react-dom" -> "17.0.0",
+      "react-scripts" -> "5.0.0",
+      "react-admin" -> "4.1.0",
+      "ra-ui-materialui" -> "4.1.0",
+      "ra-data-simple-rest" -> "4.1.0",
+      "ra-i18n-polyglot" -> "4.1.0",
+      "ra-language-english" -> "4.1.0",
+      "ra-core" -> "4.1.0",
+      "@mui/material" -> "5.8.1",
+      "@emotion/styled" -> "11.8.1"
+    )
+  )
+
 lazy val root = (project in file("."))
   .aggregate(
     spraCommon.jvm,
     spraCommon.js,
     spraApi.jvm,
     spraApi.js,
-    spraPlayServer
+    spraPlayServer,
+    spraWeb
   )
   .settings(
     name := "scala-postgres-react-admin",
