@@ -201,7 +201,7 @@ lazy val spraWeb = (project in file("spra-web"))
   .settings(
     scalaVersion := "2.13.8",
     crossScalaVersions := Seq("2.13.8", "3.1.2"),
-    name := "admin-data-explorer-web",
+    name := "spra-web",
     Test / fork := false, // sjs needs this to run tests
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scala-js-macrotask-executor" % "1.0.0",
