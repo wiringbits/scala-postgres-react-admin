@@ -46,7 +46,7 @@ object AdminView {
           Resource.Props(
             name = table.name,
             list = ListGuesser(table),
-            edit = EditGuesser(table, props.dataExplorerSettings)
+            edit = EditGuesser(table, props.dataExplorerSettings, tables)
           )
         )
       }

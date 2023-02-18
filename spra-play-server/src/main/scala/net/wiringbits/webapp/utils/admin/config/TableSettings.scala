@@ -18,6 +18,9 @@ package net.wiringbits.webapp.utils.admin.config
   *   overrides the data type and converts it, it requires a column name and Text, BinaryImage, Binary
   * @param filterableColumns
   *   columns that are filterable via react-admin
+  * @param joinTables
+  *   tables that are joined with this table, it requires a the table name and the column fk relation name (for example:
+  *   user_logs -> user_id)
   */
 
 case class TableSettings(
@@ -29,7 +32,9 @@ case class TableSettings(
     canBeDeleted: Boolean = true,
     primaryKeyDataType: PrimaryKeyDataType = PrimaryKeyDataType.UUID,
     columnTypeOverrides: Map[String, CustomDataType] = Map.empty,
-    filterableColumns: List[String] = List.empty
+    filterableColumns: List[String] = List.empty,
+    // The tables that joins requieres to have their table settings
+    joinTables: Map[String, String] = Map.empty
 )
 
 sealed trait PrimaryKeyDataType extends Product with Serializable

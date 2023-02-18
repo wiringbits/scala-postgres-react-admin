@@ -6,11 +6,11 @@ import slinky.core.facade.ReactElement
 import scala.scalajs.js
 import scala.scalajs.js.|
 
-object Datagrid extends ExternalComponent {
+object ReferenceManyField extends ExternalComponent {
   case class Props(
-      rowClick: js.UndefOr[String] = js.undefined,
-      bulkActionButtons: Boolean = false,
+      reference: String,
+      target: String,
       children: Seq[ReactElement]
   )
-  override val component: String | js.Object = ReactAdmin.Datagrid
+  override val component: String | js.Object = ReactAdmin.ReferenceManyField
 }
