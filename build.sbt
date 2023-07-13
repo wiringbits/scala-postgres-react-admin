@@ -1,3 +1,6 @@
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption.REPLACE_EXISTING
+
 ThisBuild / versionScheme := Some("early-semver")
 // For all Sonatype accounts created on or after February 2021
 ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
@@ -25,6 +28,8 @@ val playJson = "2.10.0-RC5"
 val sttp = "3.5.0"
 
 val consoleDisabledOptions = Seq("-Xfatal-warnings", "-Ywarn-unused", "-Ywarn-unused-import")
+
+lazy val build = TaskKey[File]("build")
 
 // Used only by the server
 lazy val baseServerSettings: Project => Project = {
@@ -194,15 +199,84 @@ lazy val bundlerSettings: Project => Project =
     Compile / fullOptJS / webpackDevServerExtraArgs += "--mode=production"
   )
 
+lazy val spraWebBuildInfoSettings: Project => Project = _.enablePlugins(BuildInfoPlugin)
+  .settings(
+    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+    buildInfoKeys ++= {
+      val apiUrl = sys.env.get("API_URL")
+      val values = Seq(
+        "apiUrl" -> apiUrl
+      )
+      // Logging these values is useful to make sure that the necessary settings
+      // are being overriden when packaging the app.
+      sLog.value.info(s"BuildInfo settings:\n${values.mkString("\n")}")
+      values.map(t => BuildInfoKey(t._1, t._2))
+    },
+    buildInfoPackage := "net.wiringbits",
+    buildInfoUsePackageAsPath := true
+  )
+
+lazy val browserProject: Project => Project =
+  _.settings(
+    build := {
+      val artifacts = (Compile / fullOptJS / webpack).value
+      val artifactFolder = (Compile / fullOptJS / crossTarget).value
+      val jsFolder = baseDirectory.value / "src" / "main" / "js"
+      val distFolder = baseDirectory.value / "build"
+
+      distFolder.mkdirs()
+      artifacts.foreach { artifact =>
+        val target = artifact.data.relativeTo(artifactFolder) match {
+          case None => distFolder / artifact.data.name
+          case Some(relFile) => distFolder / relFile.toString
+        }
+
+        Files.copy(artifact.data.toPath, target.toPath, REPLACE_EXISTING)
+      }
+
+      // copy public resources
+      Files
+        .walk(jsFolder.toPath)
+        .filter(x => !Files.isDirectory(x))
+        .forEach(source => {
+          source.toFile.relativeTo(jsFolder).foreach { relativeSource =>
+            val dest = distFolder / relativeSource.toString
+            dest.getParentFile.mkdirs()
+            Files.copy(source, dest.toPath, REPLACE_EXISTING)
+          }
+        })
+
+      // link the proper js bundle
+      val indexFrom = baseDirectory.value / "src/main/js/index.html"
+      val indexTo = distFolder / "index.html"
+
+      val indexPatchedContent = {
+        import collection.JavaConverters._
+        Files
+          .readAllLines(indexFrom.toPath, IO.utf8)
+          .asScala
+          .map(_.replaceAllLiterally("-fastopt", "-opt"))
+          .mkString("\n")
+      }
+
+      Files.write(indexTo.toPath, indexPatchedContent.getBytes(IO.utf8))
+      distFolder
+    }
+  )
+
 lazy val spraWeb = (project in file("spra-web"))
-  .dependsOn(spraApi.js)
-  .configure(bundlerSettings, baseLibSettings)
+  .dependsOn(spraApi.js, spraPlayServer)
+  .configure(bundlerSettings, baseLibSettings, browserProject, spraWebBuildInfoSettings)
   .configure(_.enablePlugins(ScalaJSPlugin, ScalaJSBundlerPlugin))
   .settings(
     scalaVersion := "2.13.8",
     crossScalaVersions := Seq("2.13.8", "3.1.2"),
     name := "spra-web",
     Test / fork := false, // sjs needs this to run tests
+    scalaJSUseMainModuleInitializer := true,
+    scalaJSLinkerConfig := scalaJSLinkerConfig.value.withSourceMap(false),
+    webpackDevServerPort := 8081,
+    webpackBundlingMode := BundlingMode.LibraryOnly(),
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scala-js-macrotask-executor" % "1.0.0",
       "me.shadaj" %%% "slinky-core" % "0.7.3",
@@ -238,3 +312,5 @@ lazy val root = (project in file("."))
     publishLocal := {},
     publish / skip := true
   )
+
+addCommandAlias("spra-admin", ";spraWeb/fastOptJS::startWebpackDevServer;~spraWeb/fastOptJS")

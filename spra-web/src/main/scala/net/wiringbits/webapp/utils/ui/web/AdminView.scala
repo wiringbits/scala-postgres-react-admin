@@ -48,7 +48,7 @@ object AdminView {
             list = ListGuesser(table),
             edit = EditGuesser(table, props.dataExplorerSettings)
           )
-        )
+        ).withKey(table.name)
       }
     }
 
