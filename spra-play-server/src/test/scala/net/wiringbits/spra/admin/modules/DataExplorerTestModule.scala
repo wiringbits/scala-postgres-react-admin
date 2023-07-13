@@ -17,13 +17,13 @@ class DataExplorerTestModule extends AbstractModule {
     TableSettings(
       tableName = "uuid_table",
       primaryKeyField = "id",
-      primaryKeyDataType = UUID
+      primaryKeyDataType = PrimaryKeyDataType.UUID
     ), // explicit default
     TableSettings(tableName = "serial_table", primaryKeyField = "id", primaryKeyDataType = Serial),
     TableSettings(
       tableName = "big_serial_table",
       primaryKeyField = "id",
-      primaryKeyDataType = BigSerial
+      primaryKeyDataType = PrimaryKeyDataType.BigSerial
     ),
     TableSettings(
       tableName = "serial_table_overflow",

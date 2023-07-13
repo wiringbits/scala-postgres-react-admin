@@ -1,7 +1,6 @@
 package net.wiringbits.spra.admin.services
 
-import net.wiringbits.spra.admin.config.CustomDataType.BinaryImage
-import net.wiringbits.spra.admin.config.{DataExplorerSettings, TableSettings}
+import net.wiringbits.spra.admin.config.{CustomDataType, DataExplorerSettings, TableSettings}
 import net.wiringbits.spra.admin.repositories.DatabaseTablesRepository
 import net.wiringbits.spra.admin.repositories.models.{ForeignKey, TableData}
 import net.wiringbits.spra.admin.utils.models.QueryParameters
@@ -251,7 +250,7 @@ class AdminService @Inject() (
   }
 
   private def validateImageColumn(settings: TableSettings, columnName: String): Unit = {
-    val maybe = settings.columnTypeOverrides.find(x => x._1 == columnName && x._2 == BinaryImage)
+    val maybe = settings.columnTypeOverrides.find(x => x._1 == columnName && x._2 == CustomDataType.BinaryImage)
     if (maybe.isDefined) () else throw new RuntimeException("This column can't be used as a binary image")
   }
 

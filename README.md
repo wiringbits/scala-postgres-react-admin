@@ -23,7 +23,7 @@ class DataExplorerModule extends AbstractModule {
 ```
 - Add the `AppRouter` routes to your `routes` file:
 ```scala
--> / net.wiringbits.webapp.utils.admin.AppRouter
+-> / net.wiringbits.spra.admin.AppRouter
 ```
 - Run the PlayFramework application
 - Run `sbt spra-dev` to start the SPRA web

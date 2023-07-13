@@ -1,8 +1,7 @@
 package net.wiringbits.spra.admin.repositories.daos
 
 import anorm.{SqlParser, SqlStringInterpolation}
-import net.wiringbits.spra.admin.config.CustomDataType.{Binary, BinaryImage}
-import net.wiringbits.spra.admin.config.{PrimaryKeyDataType, TableSettings}
+import net.wiringbits.spra.admin.config.{CustomDataType, PrimaryKeyDataType, TableSettings}
 import net.wiringbits.spra.admin.repositories.models.*
 import net.wiringbits.spra.admin.utils.models.{FilterParameter, QueryParameters}
 import net.wiringbits.spra.admin.utils.{QueryBuilder, StringRegex}
@@ -163,11 +162,11 @@ object DatabaseTablesDAO {
     val maybe = settings.columnTypeOverrides.get(columnName)
     val data = maybe
       .map {
-        case BinaryImage =>
+        case CustomDataType.BinaryImage =>
           val rowId = resultSet.getString(settings.primaryKeyField)
           s"$baseUrl/admin/images/${settings.tableName}/$columnName/$rowId"
         // TODO: handle binary file
-        case Binary => resultSet.getString(columnName)
+        case CustomDataType.Binary => resultSet.getString(columnName)
       }
       .getOrElse(resultSet.getString(columnName))
     Option(data).getOrElse("")
