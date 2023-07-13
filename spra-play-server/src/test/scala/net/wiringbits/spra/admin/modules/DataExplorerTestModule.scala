@@ -1,9 +1,7 @@
 package net.wiringbits.spra.admin.modules
 
 import com.google.inject.{AbstractModule, Provides}
-import net.wiringbits.spra.admin.config.PrimaryKeyDataType.{BigSerial, Serial, UUID}
 import net.wiringbits.spra.admin.config.{DataExplorerSettings, PrimaryKeyDataType, TableSettings}
-import net.wiringbits.webapp.utils.admin.config.{DataExplorerSettings, PrimaryKeyDataType, TableSettings}
 
 class DataExplorerTestModule extends AbstractModule {
 
@@ -19,7 +17,7 @@ class DataExplorerTestModule extends AbstractModule {
       primaryKeyField = "id",
       primaryKeyDataType = PrimaryKeyDataType.UUID
     ), // explicit default
-    TableSettings(tableName = "serial_table", primaryKeyField = "id", primaryKeyDataType = Serial),
+    TableSettings(tableName = "serial_table", primaryKeyField = "id", primaryKeyDataType = PrimaryKeyDataType.Serial),
     TableSettings(
       tableName = "big_serial_table",
       primaryKeyField = "id",
