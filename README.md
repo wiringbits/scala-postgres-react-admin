@@ -1,8 +1,19 @@
 # scala-postgres-react-admin
+
 SPRA exposes your Postgres database through a nice React-Admin UI
 
+## Installation
+
+Add the following dependency to your `build.sbt` file:
+
+```scala
+"net.wiringbits" %% "scala-postgres-react-admin" % "VERSION"
+```
+
 ## How to run
-- Add an AbstractModule that provides a DataExplorerSettings to your PlayFramework application, for example:
+
+- In your main Play Framework server, add an AbstractModule that provides a DataExplorerSettings, for example:
+
 ```scala
 class DataExplorerModule extends AbstractModule {
 
@@ -21,9 +32,12 @@ class DataExplorerModule extends AbstractModule {
   )
 } 
 ```
-- Add the `AppRouter` routes to your `routes` file:
+
+- Add the SPRA `AppRouter` routes to your `routes` file:
+
 ```scala
 -> / net.wiringbits.spra.admin.AppRouter
 ```
-- Run the PlayFramework application
+
+- Run your Play Framework server application
 - Run `sbt spra-dev` to start the SPRA web
