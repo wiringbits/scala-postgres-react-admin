@@ -1,13 +1,13 @@
 package net.wiringbits.spra.admin.modules
 
 import com.google.inject.{AbstractModule, Provides}
-import net.wiringbits.spra.admin.config.{DataExplorerSettings, PrimaryKeyDataType, TableSettings}
+import net.wiringbits.spra.admin.config.{DataExplorerConfig, PrimaryKeyDataType, TableSettings}
 
 class DataExplorerTestModule extends AbstractModule {
 
   @Provides()
-  def dataExplorerSettings: DataExplorerSettings = {
-    DataExplorerSettings("http://localhost:9000", settings)
+  def dataExplorerConfig: DataExplorerConfig = {
+    DataExplorerConfig("http://localhost:9000", settings)
   }
 
   val settings: List[TableSettings] = List(

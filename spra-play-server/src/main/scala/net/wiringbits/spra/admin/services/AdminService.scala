@@ -1,6 +1,6 @@
 package net.wiringbits.spra.admin.services
 
-import net.wiringbits.spra.admin.config.{CustomDataType, DataExplorerSettings, TableSettings}
+import net.wiringbits.spra.admin.config.{CustomDataType, DataExplorerConfig, TableSettings}
 import net.wiringbits.spra.admin.repositories.DatabaseTablesRepository
 import net.wiringbits.spra.admin.repositories.models.{ForeignKey, TableData}
 import net.wiringbits.spra.admin.utils.models.QueryParameters
@@ -17,7 +17,7 @@ import scala.util.Try
 
 class AdminService @Inject() (
     databaseTablesRepository: DatabaseTablesRepository,
-    tableSettings: DataExplorerSettings
+    dataExplorerConfig: DataExplorerConfig
 )(implicit
     ec: ExecutionContext
 ) {
@@ -30,7 +30,7 @@ class AdminService @Inject() (
     val maybe = filteredForeignKeys.map(_.primaryTable).headOption
 
     maybe.map { tableName =>
-      val maybe = tableSettings.unsafeFindByName(tableName).referenceField
+      val maybe = dataExplorerConfig.unsafeFindByName(tableName).referenceField
       val referenceField = maybe.getOrElse("id")
       AdminGetTables.Response.TableReference(referencedTable = tableName, referenceField = referenceField)
     }
@@ -45,7 +45,7 @@ class AdminService @Inject() (
 
     for {
       items <- Future.sequence {
-        tableSettings.tables.map { settings =>
+        dataExplorerConfig.tablesSettings.map { settings =>
           val hiddenColumns = settings.hiddenColumns
           for {
             tableColumns <- databaseTablesRepository.getTableColumns(settings.tableName)
@@ -89,7 +89,7 @@ class AdminService @Inject() (
 
     for {
       _ <- validations
-      settings = tableSettings.unsafeFindByName(tableName)
+      settings = dataExplorerConfig.unsafeFindByName(tableName)
       _ <- validateQueryParameters(tableName, queryParams)
       tableRows <- databaseTablesRepository.getTableMetadata(settings, queryParams)
       numberOfRecords <- databaseTablesRepository.numberOfRecords(tableName)
@@ -120,7 +120,7 @@ class AdminService @Inject() (
       _ <- validations
       maybe <- databaseTablesRepository.find(tableName, primaryKeyValue)
       tableRow = maybe.getOrElse(throw new RuntimeException(s"Cannot find item in $tableName with id $primaryKeyValue"))
-      settings = tableSettings.unsafeFindByName(tableName)
+      settings = dataExplorerConfig.unsafeFindByName(tableName)
       hiddenData = hideData(tableRow, settings.hiddenColumns)
     } yield hiddenData
   }
@@ -132,7 +132,7 @@ class AdminService @Inject() (
 
     for {
       _ <- validations
-      settings = tableSettings.unsafeFindByName(tableName)
+      settings = dataExplorerConfig.unsafeFindByName(tableName)
       tableRows <- Future.sequence {
         primaryKeyValues.map { primaryKeyValue =>
           for {
@@ -194,7 +194,7 @@ class AdminService @Inject() (
   def delete(tableName: String, primaryKeyValue: String): Future[Unit] = {
     val validations = for {
       _ <- Future(validateTableName(tableName))
-      settings = tableSettings.unsafeFindByName(tableName)
+      settings = dataExplorerConfig.unsafeFindByName(tableName)
       _ = if (settings.canBeDeleted) () else throw new RuntimeException(s"Table $tableName resources cannot be deleted")
     } yield ()
 
@@ -206,7 +206,7 @@ class AdminService @Inject() (
   }
 
   private def validateTableName(tableName: String): Unit = {
-    val exists = tableSettings.tables.exists(_.tableName == tableName)
+    val exists = dataExplorerConfig.tablesSettings.exists(_.tableName == tableName)
     if (exists) () else throw new RuntimeException(s"Unexpected error because the DB table wasn't found: $tableName")
   }
 
@@ -236,7 +236,7 @@ class AdminService @Inject() (
     }
     for {
       _ <- validations
-      settings = tableSettings.unsafeFindByName(tableName)
+      settings = dataExplorerConfig.unsafeFindByName(tableName)
       _ = validateImageColumn(settings, columnName)
       maybe <- databaseTablesRepository.getImageData(settings, columnName, imageId)
       imageData = maybe.getOrElse(throw new RuntimeException(s"Image with id $imageId on $tableName doesn't exists"))

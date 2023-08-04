@@ -1,7 +1,7 @@
 package net.wiringbits.spra.admin.modules
 
 import com.google.inject.{AbstractModule, Provides, Singleton}
-import net.wiringbits.spra.admin.config.SpraConfig
+import net.wiringbits.spra.admin.config.DataExplorerConfig
 import org.slf4j.LoggerFactory
 import play.api.Configuration
 
@@ -11,8 +11,8 @@ class ConfigModule extends AbstractModule {
 
   @Provides
   @Singleton
-  def provideSpraConfig(global: Configuration): SpraConfig = {
-    val config = SpraConfig(global.get[Configuration]("spra"))
+  def dataExplorerConfig(global: Configuration): DataExplorerConfig = {
+    val config = DataExplorerConfig(global.get[Configuration]("dataExplorer"))
     logger.info(s"Loaded configuration: $config")
     config
   }

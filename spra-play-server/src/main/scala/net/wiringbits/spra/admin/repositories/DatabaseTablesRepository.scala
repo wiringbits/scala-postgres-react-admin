@@ -1,6 +1,6 @@
 package net.wiringbits.spra.admin.repositories
 
-import net.wiringbits.spra.admin.config.{DataExplorerSettings, TableSettings}
+import net.wiringbits.spra.admin.config.{DataExplorerConfig, TableSettings}
 import net.wiringbits.spra.admin.executors.DatabaseExecutionContext
 import net.wiringbits.spra.admin.repositories.daos.DatabaseTablesDAO
 import net.wiringbits.spra.admin.repositories.models.{DatabaseTable, ForeignKey, TableColumn, TableData}
@@ -12,7 +12,7 @@ import scala.concurrent.Future
 
 class DatabaseTablesRepository @Inject() (database: Database)(implicit
     ec: DatabaseExecutionContext,
-    tableSettings: DataExplorerSettings
+    dataExplorerConfig: DataExplorerConfig
 ) {
   def all(): Future[List[DatabaseTable]] = Future {
     database.withConnection { implicit conn =>
@@ -34,7 +34,7 @@ class DatabaseTablesRepository @Inject() (database: Database)(implicit
 
   def getMandatoryFields(tableName: String): Future[List[TableColumn]] = Future {
     database.withConnection { implicit conn =>
-      val primaryKeyField = tableSettings.unsafeFindByName(tableName).primaryKeyField
+      val primaryKeyField = dataExplorerConfig.unsafeFindByName(tableName).primaryKeyField
       DatabaseTablesDAO.getMandatoryFields(tableName, primaryKeyField)
     }
   }
@@ -42,7 +42,7 @@ class DatabaseTablesRepository @Inject() (database: Database)(implicit
   def getTableMetadata(settings: TableSettings, queryParameters: QueryParameters): Future[List[TableData]] = Future {
     database.withTransaction { implicit conn =>
       val columns = DatabaseTablesDAO.getTableColumns(settings.tableName)
-      val rows = DatabaseTablesDAO.getTableData(settings, columns, queryParameters, tableSettings.baseUrl)
+      val rows = DatabaseTablesDAO.getTableData(settings, columns, queryParameters, dataExplorerConfig.baseUrl)
       val columnNames = getColumnNames(columns, settings.primaryKeyField)
       rows.map { row =>
         val tableRow = row.convertToMap(columnNames)
@@ -59,9 +59,9 @@ class DatabaseTablesRepository @Inject() (database: Database)(implicit
 
   def find(tableName: String, primaryKeyValue: String): Future[Option[TableData]] = Future {
     database.withTransaction { implicit conn =>
-      val settings = tableSettings.unsafeFindByName(tableName)
+      val settings = dataExplorerConfig.unsafeFindByName(tableName)
       val columns = DatabaseTablesDAO.getTableColumns(tableName)
-      val maybe = DatabaseTablesDAO.find(settings, columns, primaryKeyValue, tableSettings.baseUrl)
+      val maybe = DatabaseTablesDAO.find(settings, columns, primaryKeyValue, dataExplorerConfig.baseUrl)
       val columnNames = getColumnNames(columns, settings.primaryKeyField)
       maybe.map(x => TableData(x.convertToMap(columnNames)))
     }
@@ -69,8 +69,8 @@ class DatabaseTablesRepository @Inject() (database: Database)(implicit
 
   def create(tableName: String, body: Map[String, String]): Future[Unit] = Future {
     database.withConnection { implicit conn =>
-      val primaryKeyField = tableSettings.unsafeFindByName(tableName).primaryKeyField
-      val primaryKeyType = tableSettings.unsafeFindByName(tableName).primaryKeyDataType
+      val primaryKeyField = dataExplorerConfig.unsafeFindByName(tableName).primaryKeyField
+      val primaryKeyType = dataExplorerConfig.unsafeFindByName(tableName).primaryKeyDataType
       DatabaseTablesDAO.create(
         tableName = tableName,
         body = body,
@@ -83,7 +83,7 @@ class DatabaseTablesRepository @Inject() (database: Database)(implicit
   def update(tableName: String, primaryKeyValue: String, body: Map[String, String]): Future[Unit] =
     Future {
       database.withTransaction { implicit conn =>
-        val settings = tableSettings.unsafeFindByName(tableName)
+        val settings = dataExplorerConfig.unsafeFindByName(tableName)
         val columns = DatabaseTablesDAO.getTableColumns(tableName)
         // hide non editable fields in case somebody edit it
         val bodyWithoutNonEditableColumns = body.filterNot { case (key, _) =>
@@ -110,8 +110,8 @@ class DatabaseTablesRepository @Inject() (database: Database)(implicit
   def delete(tableName: String, primaryKeyValue: String): Future[Unit] =
     Future {
       database.withConnection { implicit conn =>
-        val primaryKeyField = tableSettings.unsafeFindByName(tableName).primaryKeyField
-        val primaryKeyType = tableSettings.unsafeFindByName(tableName).primaryKeyDataType
+        val primaryKeyField = dataExplorerConfig.unsafeFindByName(tableName).primaryKeyField
+        val primaryKeyType = dataExplorerConfig.unsafeFindByName(tableName).primaryKeyDataType
         DatabaseTablesDAO.delete(
           tableName = tableName,
           primaryKeyField = primaryKeyField,

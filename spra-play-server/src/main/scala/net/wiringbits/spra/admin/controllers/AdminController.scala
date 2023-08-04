@@ -1,6 +1,6 @@
 package net.wiringbits.spra.admin.controllers
 
-import net.wiringbits.spra.admin.config.DataExplorerSettings
+import net.wiringbits.spra.admin.config.DataExplorerConfig
 import net.wiringbits.spra.admin.services.AdminService
 import net.wiringbits.spra.admin.utils.models.QueryParameters
 import net.wiringbits.spra.api.models._
@@ -14,7 +14,7 @@ import scala.concurrent.ExecutionContext
 // TODO: Remove authentication, which should be provided by each app
 class AdminController @Inject() (
     adminService: AdminService,
-    settings: DataExplorerSettings
+    dataExplorerConfig: DataExplorerConfig
 )(implicit cc: ControllerComponents, ec: ExecutionContext)
     extends AbstractController(cc) {
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -63,7 +63,7 @@ class AdminController @Inject() (
   }
 
   def update(tableName: String, primaryKeyValue: String) = handleJsonBody[Map[String, String]] { request =>
-    val primaryKeyFieldName = settings.unsafeFindByName(tableName).primaryKeyField
+    val primaryKeyFieldName = dataExplorerConfig.unsafeFindByName(tableName).primaryKeyField
     val body = request.body.map {
       case ("id", value) => primaryKeyFieldName -> value
       case x => x
