@@ -1,6 +1,5 @@
 package net.wiringbits.spra.admin
 
-import net.wiringbits.spra.admin.config.DataExplorerConfig
 import net.wiringbits.spra.admin.controllers.{AdminController, ImagesController}
 import net.wiringbits.spra.admin.utils.StringToDataTypesExt
 import net.wiringbits.spra.admin.utils.models.{FilterParameter, PaginationParameter, QueryParameters, SortParameter}
@@ -10,16 +9,11 @@ import play.api.routing.sird._
 
 import javax.inject.Inject
 
-class AppRouter @Inject() (
-    dataExplorerConfig: DataExplorerConfig,
-    adminController: AdminController,
-    imagesController: ImagesController
-) extends SimpleRouter {
+class AppRouter @Inject() (adminController: AdminController, imagesController: ImagesController) extends SimpleRouter {
 
   override def routes: Routes = {
     // get database tables
     case GET(p"/admin/tables") =>
-      println(dataExplorerConfig)
       adminController.getTables()
 
     // get database table fields
