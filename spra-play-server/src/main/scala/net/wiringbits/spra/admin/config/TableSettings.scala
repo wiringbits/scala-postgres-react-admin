@@ -1,5 +1,10 @@
 package net.wiringbits.spra.admin.config
 
+import com.typesafe.config.Config
+import play.api.ConfigLoader
+
+import scala.util.Try
+
 /** @param tableName
   *   name of table in database
   * @param primaryKeyField
@@ -30,7 +35,67 @@ case class TableSettings(
     primaryKeyDataType: PrimaryKeyDataType = PrimaryKeyDataType.UUID,
     columnTypeOverrides: Map[String, CustomDataType] = Map.empty,
     filterableColumns: List[String] = List.empty
-)
+) {
+  override def toString: String =
+    s"""TableSettings(tableName = $tableName, primaryKeyField = $primaryKeyField, referenceField = $referenceField,
+       hiddenColumns = $hiddenColumns, nonEditableColumns = $nonEditableColumns, canBeDeleted = $canBeDeleted,
+       primaryKeyDataType = $primaryKeyDataType, columnTypeOverrides = $columnTypeOverrides,
+       filterableColumns = $filterableColumns)"""
+}
+
+object TableSettings {
+  implicit val configLoader: ConfigLoader[TableSettings] = (config: Config, path: String) => {
+    import scala.jdk.CollectionConverters._
+    val newConfig = config.getConfig(path)
+
+    def get[A](path: String): A = {
+      Try(newConfig.getAnyRef(path).asInstanceOf[A]).getOrElse(throw new RuntimeException(s"Cannot find $path"))
+    }
+
+    def getOption[A](path: String): Option[A] = {
+      Try(newConfig.getAnyRef(path).asInstanceOf[A]).toOption
+    }
+
+    def getList[A](path: String): List[A] = {
+      Try(newConfig.getAnyRefList(path).asScala.toList.asInstanceOf[List[A]]).getOrElse(List.empty)
+    }
+
+    def handleColumnTypeOverrides(): Map[String, CustomDataType] = {
+      Try(
+        newConfig
+          .getConfig("columnTypeOverrides")
+          .entrySet()
+          .asScala
+          .map { entry =>
+            val value = entry.getValue.unwrapped().asInstanceOf[String]
+            value match {
+              case "BinaryImage" => entry.getKey -> CustomDataType.BinaryImage
+              case "Binary" => entry.getKey -> CustomDataType.Binary
+              case string => throw new RuntimeException(s"Invalid custom data type: $string")
+            }
+          }
+          .toMap
+      ).getOrElse(Map.empty)
+    }
+
+    TableSettings(
+      tableName = get[String]("tableName"),
+      primaryKeyField = get[String]("primaryKeyField"),
+      referenceField = getOption[String]("referenceField"),
+      hiddenColumns = getList[String]("hiddenColumns"),
+      nonEditableColumns = getList[String]("nonEditableColumns"),
+      canBeDeleted = getOption[Boolean]("canBeDeleted").getOrElse(true),
+      primaryKeyDataType = getOption[String](" primaryKeyDataType") match {
+        case Some("UUID") | None => PrimaryKeyDataType.UUID
+        case Some("Serial") => PrimaryKeyDataType.Serial
+        case Some("BigSerial") => PrimaryKeyDataType.BigSerial
+        case string => throw new RuntimeException(s"Invalid primary key data type: $string")
+      },
+      columnTypeOverrides = handleColumnTypeOverrides(),
+      filterableColumns = getList[String]("filterableColumns")
+    )
+  }
+}
 
 sealed trait PrimaryKeyDataType extends Product with Serializable
 object PrimaryKeyDataType {

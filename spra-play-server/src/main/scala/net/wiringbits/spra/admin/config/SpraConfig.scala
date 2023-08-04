@@ -2,18 +2,17 @@ package net.wiringbits.spra.admin.config
 
 import play.api.Configuration
 
-case class SpraConfig(tables: List[String]) {
+case class SpraConfig(tablesSettings: List[TableSettings]) {
   override def toString: String = {
-    s"SpraConfig(tables = $tables)"
+    s"SpraConfig(tablesSettings = $tablesSettings)"
   }
 }
 
 object SpraConfig {
-
   def apply(config: Configuration): SpraConfig = {
-//    val tables = config.get[Seq[String]]("tables")
-//    println(config.keys)
-    SpraConfig(config.subKeys.toList)
+    val tableNames = config.subKeys.toList
+    val tablesSettings = tableNames.map(config.get[TableSettings](_))
+    SpraConfig(tablesSettings)
   }
 
 }
