@@ -3,7 +3,7 @@ package net.wiringbits.spra.admin.controllers
 import net.wiringbits.spra.admin.config.DataExplorerSettings
 import net.wiringbits.spra.admin.services.AdminService
 import net.wiringbits.spra.admin.utils.models.QueryParameters
-import net.wiringbits.spra.api.models.*
+import net.wiringbits.spra.api.models._
 import org.slf4j.LoggerFactory
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}

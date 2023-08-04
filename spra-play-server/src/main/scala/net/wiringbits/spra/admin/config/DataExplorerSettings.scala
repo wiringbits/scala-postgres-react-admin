@@ -1,6 +1,9 @@
 package net.wiringbits.spra.admin.config
 
-case class DataExplorerSettings(baseUrl: String, tables: List[TableSettings]) {
+class DataExplorerSettings(val baseUrl: String, val tables: List[TableSettings]) {
+  // TODO: remove this constructor
+  def this() = this("", List.empty)
+
   def unsafeFindByName(tableName: String): TableSettings = {
     tables
       .find(_.tableName == tableName)

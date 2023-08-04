@@ -5,7 +5,7 @@ import net.wiringbits.spra.admin.repositories.DatabaseTablesRepository
 import net.wiringbits.spra.admin.repositories.models.{ForeignKey, TableData}
 import net.wiringbits.spra.admin.utils.models.QueryParameters
 import net.wiringbits.spra.admin.utils.{MapStringHideExt, contentRangeHeader}
-import net.wiringbits.spra.api.models.*
+import net.wiringbits.spra.api.models._
 
 import java.awt.image.BufferedImage
 import java.io.{ByteArrayInputStream, File}
