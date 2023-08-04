@@ -85,7 +85,7 @@ object TableSettings {
       hiddenColumns = getList[String]("hiddenColumns"),
       nonEditableColumns = getList[String]("nonEditableColumns"),
       canBeDeleted = getOption[Boolean]("canBeDeleted").getOrElse(true),
-      primaryKeyDataType = getOption[String](" primaryKeyDataType") match {
+      primaryKeyDataType = getOption[String]("primaryKeyDataType") match {
         case Some("UUID") | None => PrimaryKeyDataType.UUID
         case Some("Serial") => PrimaryKeyDataType.Serial
         case Some("BigSerial") => PrimaryKeyDataType.BigSerial
