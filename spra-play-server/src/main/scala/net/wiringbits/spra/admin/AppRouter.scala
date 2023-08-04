@@ -23,8 +23,8 @@ class AppRouter @Inject() (
       adminController.getTables()
 
     // get database table fields
-    // example: GET http://localhost:9000/admin/tables/users?filters={}&range=[0, 9]&sort=["id", "ASC"]
-    case GET(p"/admin/tables/$tableName" ? q"filters=$filters" & q"range=$range" & q"sort=$sort") =>
+    // example: GET http://localhost:9000/admin/tables/users?filter={}&range=[0, 9]&sort=["id", "ASC"]
+    case GET(p"/admin/tables/$tableName" ? q"filter=$filters" & q"range=$range" & q"sort=$sort") =>
       val queryParams =
         QueryParameters(
           sort = SortParameter.fromString(sort),
