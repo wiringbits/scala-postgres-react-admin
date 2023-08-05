@@ -4,11 +4,13 @@ import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 ThisBuild / versionScheme := Some("early-semver")
 // For all Sonatype accounts created on or after February 2021
 ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
+ThisBuild / scalaVersion := "3.3.0"
 
 inThisBuild(
   List(
     organization := "net.wiringbits",
     name := "scala-postgres-react-admin",
+    scalaVersion := "3.3.0",
     homepage := Some(url("https://github.com/wiringbits/scala-postgres-react-admin")),
     licenses := List("MIT" -> url("https://www.opensource.org/licenses/mit-license.html")),
     developers := List(
@@ -24,8 +26,12 @@ inThisBuild(
 
 resolvers += Resolver.sonatypeRepo("releases")
 
-val playJson = "2.10.0-RC5"
+val play = "2.9.0-M6"
+val playJson = "2.10.0-RC9"
 val sttp = "3.5.0"
+val anorm = "2.7.0"
+val scalaTestPlusPlay = "6.0.0-M6"
+val scalaTestPlusMockito = "3.2.15.0"
 
 val consoleDisabledOptions = Seq("-Xfatal-warnings", "-Ywarn-unused", "-Ywarn-unused-import")
 
@@ -36,20 +42,20 @@ lazy val baseServerSettings: Project => Project = {
   _.settings(
     scalacOptions ++= Seq(
       "-Werror",
-      "-unchecked",
-      "-deprecation",
-      "-feature",
-      "-target:jvm-1.8",
-      "-encoding",
-      "UTF-8",
-      "-Xsource:3",
-      "-Wconf:src=src_managed/.*:silent",
-      "-Xlint:missing-interpolator",
-      "-Xlint:adapted-args",
-      "-Ywarn-dead-code",
-      "-Ywarn-numeric-widen",
-      "-Ywarn-value-discard",
-      "-Ywarn-unused"
+//      "-unchecked",
+//      "-deprecation",
+      "-feature"
+//      "-target:jvm-1.8",
+//      "-encoding",
+//      "UTF-8",
+//      "-Xsource:3",
+//      "-Wconf:src=src_managed/.*:silent",
+//      "-Xlint:missing-interpolator",
+//      "-Xlint:adapted-args",
+//      "-Ywarn-dead-code",
+//      "-Ywarn-numeric-widen",
+//      "-Ywarn-value-discard",
+//      "-Ywarn-unused"
     ),
     Compile / doc / scalacOptions ++= Seq("-no-link-warnings"),
     // Some options are very noisy when using the console and prevent us using it smoothly, let's disable them
@@ -68,17 +74,17 @@ lazy val playSettings: Project => Project = {
         "-no-link-warnings"
       ),
       // remove play noisy warnings
-      play.sbt.routes.RoutesKeys.routesImport := Seq.empty,
+//      play.sbt.routes.RoutesKeys.routesImport := Seq.empty,
       libraryDependencies ++= Seq(
         evolutions,
-        "com.typesafe.play" %% "play-jdbc" % "2.8.13",
+        "com.typesafe.play" %% "play-jdbc" % "2.9.0-M6",
         "com.google.inject" % "guice" % "5.1.0"
       ),
       // test
       libraryDependencies ++= Seq(
-        "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test,
-        "org.mockito" %% "mockito-scala" % "1.17.5" % Test,
-        "org.mockito" %% "mockito-scala-scalatest" % "1.17.5" % Test
+        "org.scalatestplus.play" %% "scalatestplus-play" % "6.0.0-M6" % Test,
+        "org.scalatestplus" %% "mockito-4-6" % scalaTestPlusMockito % Test
+//        "org.mockito" %% "mockito-scala-scalatest" % mockito % Test
       )
     )
 }
@@ -117,11 +123,6 @@ lazy val baseLibSettings: Project => Project = _.settings(
 // The common stuff for the server/client modules
 lazy val spraCommon = (crossProject(JSPlatform, JVMPlatform) in file("spra-common"))
   .configure(baseLibSettings)
-  .settings(
-    scalaVersion := "2.13.8",
-    crossScalaVersions := Seq("2.13.8", "3.1.2"),
-    name := "spra-common"
-  )
   .jsConfigure(_.enablePlugins(ScalaJSPlugin, ScalaJSBundlerPlugin))
   .jvmSettings(
     libraryDependencies ++= Seq(
@@ -143,11 +144,6 @@ lazy val spraCommon = (crossProject(JSPlatform, JVMPlatform) in file("spra-commo
 lazy val spraApi = (crossProject(JSPlatform, JVMPlatform) in file("spra-api"))
   .configure(baseLibSettings)
   .dependsOn(spraCommon)
-  .settings(
-    scalaVersion := "2.13.8",
-    crossScalaVersions := Seq("2.13.8", "3.1.2"),
-    name := "spra-api"
-  )
   .jsConfigure(_.enablePlugins(ScalaJSPlugin, ScalaJSBundlerPlugin))
   .jvmSettings(
     libraryDependencies ++= Seq(
@@ -168,18 +164,15 @@ lazy val spraApi = (crossProject(JSPlatform, JVMPlatform) in file("spra-api"))
 /** Includes the specific stuff to run the SPRA server side (play-specific)
   */
 lazy val spraPlayServer = (project in file("spra-play-server"))
+  .enablePlugins(PlayScala)
   .dependsOn(spraApi.jvm, spraCommon.jvm)
   .configure(baseServerSettings, playSettings)
   .settings(
-    scalaVersion := "2.13.8",
-    crossScalaVersions := Seq("2.13.8"),
-    name := "spra-play-server",
     fork := true,
     Test / fork := true, // allows for graceful shutdown of containers once the tests have finished running
     libraryDependencies ++= Seq(
-      "org.playframework.anorm" %% "anorm" % "2.6.10",
-      "com.typesafe.play" %% "play" % "2.8.13",
-      "com.typesafe.play" %% "play-json" % "2.9.2",
+      "org.playframework.anorm" %% "anorm" % anorm,
+      "com.typesafe.play" %% "play-json" % playJson,
       "org.postgresql" % "postgresql" % "42.3.6",
       "com.github.jwt-scala" %% "jwt-core" % "9.0.5",
       "de.svenkubiak" % "jBCrypt" % "0.4.3",
@@ -265,13 +258,10 @@ lazy val browserProject: Project => Project =
   )
 
 lazy val spraWeb = (project in file("spra-web"))
-  .dependsOn(spraApi.js, spraPlayServer)
+  .dependsOn(spraApi.js)
   .configure(bundlerSettings, baseLibSettings, browserProject, spraWebBuildInfoSettings)
   .configure(_.enablePlugins(ScalaJSPlugin, ScalaJSBundlerPlugin))
   .settings(
-    scalaVersion := "2.13.8",
-    crossScalaVersions := Seq("2.13.8", "3.1.2"),
-    name := "spra-web",
     Test / fork := false, // sjs needs this to run tests
     scalaJSUseMainModuleInitializer := true,
     scalaJSLinkerConfig := scalaJSLinkerConfig.value.withSourceMap(false),
