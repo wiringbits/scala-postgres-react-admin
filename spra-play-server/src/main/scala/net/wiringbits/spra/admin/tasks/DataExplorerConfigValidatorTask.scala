@@ -1,6 +1,6 @@
 package net.wiringbits.spra.admin.tasks
 
-import net.wiringbits.spra.admin.config.{DataExplorerSettings, TableSettings}
+import net.wiringbits.spra.admin.config.{DataExplorerConfig, TableSettings}
 import net.wiringbits.spra.admin.repositories.daos.DatabaseTablesDAO
 import net.wiringbits.spra.admin.repositories.models.{DatabaseTable, TableColumn}
 import org.slf4j.LoggerFactory
@@ -16,11 +16,11 @@ import scala.util.{Failure, Success, Try}
   * config, failing when there is a mismatch.
   *
   * @param database
-  * @param settings
+  * @param dataExplorerConfig
   */
 class DataExplorerConfigValidatorTask @Inject() (
     database: Database,
-    settings: DataExplorerSettings
+    dataExplorerConfig: DataExplorerConfig
 ) {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -37,7 +37,7 @@ class DataExplorerConfigValidatorTask @Inject() (
   private def run(): Unit = {
     database.withConnection { implicit conn =>
       val tables = DatabaseTablesDAO.all()
-      for (settingsTable <- settings.tables) {
+      for (settingsTable <- dataExplorerConfig.tablesSettings) {
         logger.info(s"Verifying ${settingsTable.tableName}")
         val fields = DatabaseTablesDAO.getTableColumns(settingsTable.tableName)
         validateSettings(settingsTable)

@@ -5,7 +5,7 @@ import net.wiringbits.spra.admin.utils.StringToDataTypesExt
 import net.wiringbits.spra.admin.utils.models.{FilterParameter, PaginationParameter, QueryParameters, SortParameter}
 import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
-import play.api.routing.sird.*
+import play.api.routing.sird._
 
 import javax.inject.Inject
 
@@ -17,8 +17,8 @@ class AppRouter @Inject() (adminController: AdminController, imagesController: I
       adminController.getTables()
 
     // get database table fields
-    // example: GET http://localhost:9000/admin/tables/users?filters={}&range=[0, 9]&sort=["id", "ASC"]
-    case GET(p"/admin/tables/$tableName" ? q"filters=$filters" & q"range=$range" & q"sort=$sort") =>
+    // example: GET http://localhost:9000/admin/tables/users?filter={}&range=[0, 9]&sort=["id", "ASC"]
+    case GET(p"/admin/tables/$tableName" ? q"filter=$filters" & q"range=$range" & q"sort=$sort") =>
       val queryParams =
         QueryParameters(
           sort = SortParameter.fromString(sort),

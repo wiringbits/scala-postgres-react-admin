@@ -35,21 +35,9 @@ lazy val build = TaskKey[File]("build")
 lazy val baseServerSettings: Project => Project = {
   _.settings(
     scalacOptions ++= Seq(
-      "-Werror",
       "-unchecked",
       "-deprecation",
-      "-feature",
-      "-target:jvm-1.8",
-      "-encoding",
-      "UTF-8",
-      "-Xsource:3",
-      "-Wconf:src=src_managed/.*:silent",
-      "-Xlint:missing-interpolator",
-      "-Xlint:adapted-args",
-      "-Ywarn-dead-code",
-      "-Ywarn-numeric-widen",
-      "-Ywarn-value-discard",
-      "-Ywarn-unused"
+      "-feature"
     ),
     Compile / doc / scalacOptions ++= Seq("-no-link-warnings"),
     // Some options are very noisy when using the console and prevent us using it smoothly, let's disable them
@@ -177,6 +165,7 @@ lazy val spraPlayServer = (project in file("spra-play-server"))
     fork := true,
     Test / fork := true, // allows for graceful shutdown of containers once the tests have finished running
     libraryDependencies ++= Seq(
+      guice,
       "org.playframework.anorm" %% "anorm" % "2.6.10",
       "com.typesafe.play" %% "play" % "2.8.13",
       "com.typesafe.play" %% "play-json" % "2.9.2",
