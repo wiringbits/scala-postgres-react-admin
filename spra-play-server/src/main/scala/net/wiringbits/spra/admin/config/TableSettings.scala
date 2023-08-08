@@ -97,16 +97,11 @@ object TableSettings {
   }
 }
 
-sealed trait PrimaryKeyDataType extends Product with Serializable
-object PrimaryKeyDataType {
-  final case object UUID extends PrimaryKeyDataType
-  final case object Serial extends PrimaryKeyDataType
-  final case object BigSerial extends PrimaryKeyDataType
+enum PrimaryKeyDataType {
+  case UUID, Serial, BigSerial
 }
 
-sealed trait CustomDataType extends Product with Serializable
-object CustomDataType {
-  final case object BinaryImage extends CustomDataType
+enum CustomDataType {
   // TODO: add support to binary files
-  final case object Binary extends CustomDataType
+  case BinaryImage, Binary
 }
