@@ -171,6 +171,7 @@ lazy val spraPlayServer = (project in file("spra-play-server"))
     fork := true,
     Test / fork := true, // allows for graceful shutdown of containers once the tests have finished running
     libraryDependencies ++= Seq(
+      guice,
       "org.playframework.anorm" %% "anorm" % anorm,
       "com.typesafe.play" %% "play-json" % playJson,
       "org.postgresql" % "postgresql" % "42.3.6",

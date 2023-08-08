@@ -1,6 +1,6 @@
 package net.wiringbits.spra.admin.repositories
 
-import anorm.*
+import anorm._
 import net.wiringbits.spra.admin.repositories.models.{DatabaseTable, ForeignKey, TableColumn}
 
 package object daos {
