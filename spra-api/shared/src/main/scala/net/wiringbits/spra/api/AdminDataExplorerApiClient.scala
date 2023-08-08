@@ -108,7 +108,7 @@ object AdminDataExplorerApiClient {
       val parameters: Map[String, String] = Map(
         "sort" -> sort.mkString("[", ",", "]"),
         "range" -> range.mkString("[", ",", "]"),
-        "filters" -> filters
+        "filter" -> filters
       )
       val uri = ServerAPI
         .withPath(path)
