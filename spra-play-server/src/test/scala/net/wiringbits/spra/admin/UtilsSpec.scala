@@ -1,6 +1,6 @@
 package net.wiringbits.spra.admin
 
-import net.wiringbits.webapp.utils.admin.utils.StringToDataTypesExt
+import net.wiringbits.spra.admin.utils.StringToDataTypesExt
 import org.scalatest.OptionValues.convertOptionToValuable
 import org.scalatest.matchers.must.Matchers.{be, convertToAnyMustWrapper}
 import org.scalatest.wordspec.AnyWordSpec

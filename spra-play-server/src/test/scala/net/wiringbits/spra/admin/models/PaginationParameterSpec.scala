@@ -1,7 +1,6 @@
 package net.wiringbits.spra.admin.models
 
 import net.wiringbits.spra.admin.utils.models.PaginationParameter
-import net.wiringbits.webapp.utils.admin.utils.models.PaginationParameter
 import org.scalatest.matchers.must.Matchers.{be, convertToAnyMustWrapper}
 import org.scalatest.wordspec.AnyWordSpec
 

@@ -1,6 +1,6 @@
 package net.wiringbits.spra.admin
 
-import net.wiringbits.webapp.utils.admin.utils.StringRegex
+import net.wiringbits.spra.admin.utils.StringRegex
 import org.scalatest.matchers.must.Matchers.{be, convertToAnyMustWrapper}
 import org.scalatest.wordspec.AnyWordSpec
 

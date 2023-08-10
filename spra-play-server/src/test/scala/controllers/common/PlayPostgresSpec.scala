@@ -2,7 +2,7 @@ package controllers.common
 
 import com.dimafeng.testcontainers.PostgreSQLContainer
 import com.dimafeng.testcontainers.scalatest.TestContainerForEach
-import net.wiringbits.webapp.utils.api.AdminDataExplorerApiClient
+import net.wiringbits.spra.api.AdminDataExplorerApiClient
 import org.scalatest.TestData
 import org.scalatest.time.SpanSugar.convertIntToGrainOfTime
 import org.scalatestplus.play.guice.GuiceOneServerPerTest
