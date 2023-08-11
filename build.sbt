@@ -268,10 +268,11 @@ lazy val spraWeb = (project in file("spra-web"))
     scalaJSLinkerConfig := scalaJSLinkerConfig.value.withSourceMap(false),
     webpackDevServerPort := 8081,
     webpackBundlingMode := BundlingMode.LibraryOnly(),
+    stFlavour := Flavour.Slinky,
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scala-js-macrotask-executor" % "1.0.0",
-      "me.shadaj" %%% "slinky-core" % "0.7.3",
-      "me.shadaj" %%% "slinky-web" % "0.7.3"
+      "me.shadaj" %%% "slinky-core" % "0.7.4",
+      "me.shadaj" %%% "slinky-web" % "0.7.4"
     ),
     Compile / npmDependencies ++= Seq(
       "react" -> "17.0.0",

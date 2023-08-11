@@ -1,11 +1,11 @@
 // while there are some eviction errors, plugins seem to be compatible so far
 evictionErrorLevel := sbt.util.Level.Warn
 
-addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.1.0")
+addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.3.1")
 
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.9.0-M6")
 
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.8.0")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.13.1")
 
 addSbtPlugin("ch.epfl.scala" % "sbt-scalajs-bundler" % "0.20.0")
 
