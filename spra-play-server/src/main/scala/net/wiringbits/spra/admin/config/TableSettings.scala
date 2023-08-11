@@ -45,7 +45,7 @@ case class TableSettings(
 
 object TableSettings {
   implicit val configLoader: ConfigLoader[TableSettings] = (config: Config, path: String) => {
-    import scala.jdk.CollectionConverters._
+    import scala.jdk.CollectionConverters.*
     val newConfig = config.getConfig(path)
 
     def get[A](path: String): A = {

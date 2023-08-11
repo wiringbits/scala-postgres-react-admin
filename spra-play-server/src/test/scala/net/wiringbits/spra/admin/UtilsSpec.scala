@@ -2,7 +2,7 @@ package net.wiringbits.spra.admin
 
 import net.wiringbits.spra.admin.utils.StringToDataTypesExt
 import org.scalatest.OptionValues.convertOptionToValuable
-import org.scalatest.matchers.must.Matchers.{be, convertToAnyMustWrapper}
+import org.scalatest.matchers.must.Matchers.{be, must}
 import org.scalatest.wordspec.AnyWordSpec
 
 class UtilsSpec extends AnyWordSpec {

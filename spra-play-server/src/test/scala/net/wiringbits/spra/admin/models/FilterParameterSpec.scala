@@ -1,7 +1,7 @@
 package net.wiringbits.spra.admin.models
 
 import net.wiringbits.spra.admin.utils.models.FilterParameter
-import org.scalatest.matchers.must.Matchers.{be, convertToAnyMustWrapper}
+import org.scalatest.matchers.must.Matchers.{be, must}
 import org.scalatest.wordspec.AnyWordSpec
 
 class FilterParameterSpec extends AnyWordSpec {

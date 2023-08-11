@@ -1,7 +1,7 @@
 package net.wiringbits.spra.admin
 
 import net.wiringbits.spra.admin.utils.StringRegex
-import org.scalatest.matchers.must.Matchers.{be, convertToAnyMustWrapper}
+import org.scalatest.matchers.must.Matchers.{be, must}
 import org.scalatest.wordspec.AnyWordSpec
 
 class StringRegexSpec extends AnyWordSpec {

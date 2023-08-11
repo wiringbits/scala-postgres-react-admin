@@ -3,4 +3,4 @@
 # https://www.playframework.com/documentation/latest/ScalaRouting
 # ~~~~
 
--> / net.wiringbits.spra.admin.AppRouter
+->        /        net.wiringbits.spra.admin.AppRouter

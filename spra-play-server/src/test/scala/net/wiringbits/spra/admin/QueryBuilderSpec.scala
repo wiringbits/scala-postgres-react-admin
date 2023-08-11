@@ -2,7 +2,7 @@ package net.wiringbits.spra.admin
 
 import net.wiringbits.spra.admin.repositories.models.TableColumn
 import net.wiringbits.spra.admin.utils.QueryBuilder
-import org.scalatest.matchers.must.Matchers.{be, convertToAnyMustWrapper}
+import org.scalatest.matchers.must.Matchers.{be, must}
 import org.scalatest.wordspec.AnyWordSpec
 
 class QueryBuilderSpec extends AnyWordSpec {

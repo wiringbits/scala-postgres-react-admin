@@ -1,7 +1,7 @@
 package net.wiringbits.spra.ui.web.components
 
 import net.wiringbits.spra.api.models.AdminGetTables
-import net.wiringbits.spra.ui.web.facades.reactadmin._
+import net.wiringbits.spra.ui.web.facades.reactadmin.*
 import net.wiringbits.spra.ui.web.models.ColumnType
 import net.wiringbits.spra.ui.web.models.ColumnType.{Date, Email, Image, Number, Text}
 import net.wiringbits.spra.ui.web.utils.ResponseGuesser
