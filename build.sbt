@@ -42,20 +42,7 @@ lazy val baseServerSettings: Project => Project = {
   _.settings(
     scalacOptions ++= Seq(
       "-Werror",
-//      "-unchecked",
-//      "-deprecation",
       "-feature"
-//      "-target:jvm-1.8",
-//      "-encoding",
-//      "UTF-8",
-//      "-Xsource:3",
-//      "-Wconf:src=src_managed/.*:silent",
-//      "-Xlint:missing-interpolator",
-//      "-Xlint:adapted-args",
-//      "-Ywarn-dead-code",
-//      "-Ywarn-numeric-widen",
-//      "-Ywarn-value-discard",
-//      "-Ywarn-unused"
     ),
     Compile / doc / scalacOptions ++= Seq("-no-link-warnings"),
     // Some options are very noisy when using the console and prevent us using it smoothly, let's disable them
@@ -73,8 +60,6 @@ lazy val playSettings: Project => Project = {
       Compile / doc / scalacOptions ++= Seq(
         "-no-link-warnings"
       ),
-      // remove play noisy warnings
-//      play.sbt.routes.RoutesKeys.routesImport := Seq.empty,
       libraryDependencies ++= Seq(
         evolutions,
         "com.typesafe.play" %% "play-jdbc" % "2.9.0-M6",
@@ -84,7 +69,6 @@ lazy val playSettings: Project => Project = {
       libraryDependencies ++= Seq(
         "org.scalatestplus.play" %% "scalatestplus-play" % "6.0.0-M6" % Test,
         "org.scalatestplus" %% "mockito-4-6" % scalaTestPlusMockito % Test
-//        "org.mockito" %% "mockito-scala-scalatest" % mockito % Test
       )
     )
 }
@@ -268,7 +252,6 @@ lazy val spraWeb = (project in file("spra-web"))
     scalaJSLinkerConfig := scalaJSLinkerConfig.value.withSourceMap(false),
     webpackDevServerPort := 8081,
     webpackBundlingMode := BundlingMode.LibraryOnly(),
-    stFlavour := Flavour.Slinky,
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scala-js-macrotask-executor" % "1.0.0",
       "me.shadaj" %%% "slinky-core" % "0.7.4",
