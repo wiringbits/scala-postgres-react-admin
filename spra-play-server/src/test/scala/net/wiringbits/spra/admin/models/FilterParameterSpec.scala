@@ -1,6 +1,6 @@
 package net.wiringbits.spra.admin.models
 
-import net.wiringbits.webapp.utils.admin.utils.models.FilterParameter
+import net.wiringbits.spra.admin.utils.models.FilterParameter
 import org.scalatest.matchers.must.Matchers.{be, convertToAnyMustWrapper}
 import org.scalatest.wordspec.AnyWordSpec
 

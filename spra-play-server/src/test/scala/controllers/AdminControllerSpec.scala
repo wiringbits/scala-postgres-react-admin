@@ -2,11 +2,12 @@ package controllers
 
 import com.dimafeng.testcontainers.PostgreSQLContainer
 import controllers.common.PlayPostgresSpec
-import net.wiringbits.webapp.utils.admin.AppRouter
-import net.wiringbits.webapp.utils.admin.config.{DataExplorerSettings, TableSettings}
-import net.wiringbits.webapp.utils.admin.controllers.{AdminController, ImagesController}
-import net.wiringbits.webapp.utils.api.models.AdminCreateTable
+import net.wiringbits.spra.admin.AppRouter
+import net.wiringbits.spra.admin.config.{DataExplorerConfig, PrimaryKeyDataType, TableSettings}
+import net.wiringbits.spra.admin.controllers.{AdminController, ImagesController}
+import net.wiringbits.spra.api.models.AdminCreateTable
 import org.apache.commons.lang3.StringUtils
+import play.api.inject
 import play.api.inject.guice.GuiceApplicationBuilder
 
 import java.util.UUID
@@ -14,14 +15,38 @@ import java.util.regex.Pattern
 import scala.util.Random
 
 class AdminControllerSpec extends PlayPostgresSpec {
-  def dataExplorerSettings: DataExplorerSettings = app.injector.instanceOf(classOf[DataExplorerSettings])
-  def usersSettings: TableSettings = dataExplorerSettings.tables.headOption.value
+  val dataExplorerConfigTables: List[TableSettings] = List(
+    TableSettings("users", "user_id"), // "UUID" default
+    TableSettings(
+      tableName = "uuid_table",
+      primaryKeyField = "id",
+      primaryKeyDataType = PrimaryKeyDataType.UUID
+    ), // explicit default
+    TableSettings(tableName = "serial_table", primaryKeyField = "id", primaryKeyDataType = PrimaryKeyDataType.Serial),
+    TableSettings(
+      tableName = "big_serial_table",
+      primaryKeyField = "id",
+      primaryKeyDataType = PrimaryKeyDataType.BigSerial
+    ),
+    TableSettings(
+      tableName = "serial_table_overflow",
+      primaryKeyField = "id",
+      primaryKeyDataType = PrimaryKeyDataType.Serial
+    ),
+    TableSettings(
+      tableName = "big_serial_table_overflow",
+      primaryKeyField = "id",
+      primaryKeyDataType = PrimaryKeyDataType.BigSerial
+    )
+  )
+  val dataExplorerConfig: DataExplorerConfig = DataExplorerConfig("http://localhost:9000", dataExplorerConfigTables)
+  def usersSettings: TableSettings = dataExplorerConfig.tablesSettings.headOption.value
   // TODO: loop through dataExplorerSettings for each table instead of defining usersSettings, uuidSettings
-  def uuidSettings: TableSettings = dataExplorerSettings.tables(1)
-  def serialSettings: TableSettings = dataExplorerSettings.tables(2)
-  def bigSerialSettings: TableSettings = dataExplorerSettings.tables(3)
-  def serialOverflowSettings: TableSettings = dataExplorerSettings.tables(4)
-  def bigSerialOverflowSettings: TableSettings = dataExplorerSettings.tables(5)
+  def uuidSettings: TableSettings = dataExplorerConfig.tablesSettings(1)
+  def serialSettings: TableSettings = dataExplorerConfig.tablesSettings(2)
+  def bigSerialSettings: TableSettings = dataExplorerConfig.tablesSettings(3)
+  def serialOverflowSettings: TableSettings = dataExplorerConfig.tablesSettings(4)
+  def bigSerialOverflowSettings: TableSettings = dataExplorerConfig.tablesSettings(5)
 
   def isValidUUID(str: String): Boolean = {
     if (str == null) return false
@@ -29,7 +54,9 @@ class AdminControllerSpec extends PlayPostgresSpec {
   }
 
   override def guiceApplicationBuilder(container: PostgreSQLContainer): GuiceApplicationBuilder = {
-    val appBuilder = super.guiceApplicationBuilder(container)
+    val appBuilder = super
+      .guiceApplicationBuilder(container)
+      .overrides(inject.bind[DataExplorerConfig].to(dataExplorerConfig))
     val adminController = appBuilder.injector().instanceOf[AdminController]
     val imagesController = appBuilder.injector().instanceOf[ImagesController]
     val appRouter = new AppRouter(adminController, imagesController)
