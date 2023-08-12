@@ -3,7 +3,7 @@ package net.wiringbits.spra.admin.controllers
 import net.wiringbits.spra.admin.config.DataExplorerConfig
 import net.wiringbits.spra.admin.services.AdminService
 import net.wiringbits.spra.admin.utils.models.QueryParameters
-import net.wiringbits.spra.api.models._
+import net.wiringbits.spra.api.models.*
 import org.slf4j.LoggerFactory
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}
@@ -32,7 +32,8 @@ class AdminController @Inject() (
       _ <- adminUser(request)
       _ = logger.info(s"Get metadata for $tableName, parameters: $queryParams")
       (response, contentRange) <- adminService.tableMetadata(tableName, queryParams)
-    } yield Ok(Json.toJson(response))
+      // Json.toJson doesn't support a List[Map[_, _]] so we need to map to convert it to List[JsonValue]
+    } yield Ok(Json.toJson(response.map(Json.toJson(_))))
       .withHeaders(("Access-Control-Expose-Headers", "Content-Range"), ("Content-Range", contentRange))
   }
 
@@ -49,7 +50,7 @@ class AdminController @Inject() (
       _ <- adminUser(request)
       _ = logger.info(s"Get data from $tableName where primaryKeys = ${primaryKeyValues.mkString(",")}")
       response <- adminService.find(tableName, primaryKeyValues)
-    } yield Ok(Json.toJson(response))
+    } yield Ok(Json.toJson(response.map(Json.toJson(_))))
   }
 
   def create(tableName: String) = handleJsonBody[AdminCreateTable.Request] { request =>

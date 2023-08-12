@@ -2,7 +2,7 @@ package net.wiringbits.spra.admin.repositories.daos
 
 import anorm.{SqlParser, SqlStringInterpolation}
 import net.wiringbits.spra.admin.config.{CustomDataType, PrimaryKeyDataType, TableSettings}
-import net.wiringbits.spra.admin.repositories.models._
+import net.wiringbits.spra.admin.repositories.models.*
 import net.wiringbits.spra.admin.utils.models.{FilterParameter, QueryParameters}
 import net.wiringbits.spra.admin.utils.{QueryBuilder, StringRegex}
 

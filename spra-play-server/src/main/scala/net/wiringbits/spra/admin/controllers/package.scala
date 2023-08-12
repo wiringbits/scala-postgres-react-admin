@@ -1,10 +1,10 @@
 package net.wiringbits.spra.admin
 
-import net.wiringbits.spra.api.models.ErrorResponse
+import net.wiringbits.spra.api.models.{ErrorResponse, errorResponseFormat}
 import org.slf4j.LoggerFactory
 import play.api.libs.json.{JsValue, Json, Reads}
+import play.api.mvc.*
 import play.api.mvc.Results.InternalServerError
-import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal

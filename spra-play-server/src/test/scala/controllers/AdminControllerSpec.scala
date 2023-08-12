@@ -311,7 +311,7 @@ class AdminControllerSpec extends PlayPostgresSpec {
       val nameLength = 7
       Range.apply(0, createdUsers).foreach { i =>
         val letter = Character.valueOf(('A' + i).toChar)
-        val name = StringUtils.repeat(letter, nameLength);
+        val name = StringUtils.repeat(letter, nameLength)
         val data = Map("name" -> name, "email" -> s"test@wiringbits$i.net", "password" -> "wiringbits")
         val request = AdminCreateTable.Request(data)
         client.createItem(usersSettings.tableName, request).futureValue

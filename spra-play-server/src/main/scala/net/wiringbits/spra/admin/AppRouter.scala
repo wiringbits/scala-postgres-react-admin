@@ -5,7 +5,7 @@ import net.wiringbits.spra.admin.utils.StringToDataTypesExt
 import net.wiringbits.spra.admin.utils.models.{FilterParameter, PaginationParameter, QueryParameters, SortParameter}
 import play.api.routing.Router.Routes
 import play.api.routing.SimpleRouter
-import play.api.routing.sird._
+import play.api.routing.sird.*
 
 import javax.inject.Inject
 
