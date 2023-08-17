@@ -13,8 +13,9 @@ case class DataExplorerConfig(baseUrl: String, tablesSettings: List[TableSetting
 object DataExplorerConfig {
   def apply(config: Configuration): DataExplorerConfig = {
     val baseUrl = config.get[String]("baseUrl")
-    val tableNames = config.subKeys.toList.filter(_ != "baseUrl")
-    val tablesSettings = tableNames.map(config.get[TableSettings](_))
+    val tablesConfig = config.get[Configuration]("tables")
+    val tablesName = tablesConfig.subKeys.toList
+    val tablesSettings = tablesName.map(tablesConfig.get[TableSettings](_))
     DataExplorerConfig(baseUrl, tablesSettings)
   }
 }
