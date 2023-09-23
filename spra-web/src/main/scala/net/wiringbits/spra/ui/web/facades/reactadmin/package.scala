@@ -9,8 +9,6 @@ package object reactadmin {
   object ReactAdmin extends js.Object {
     def useEditContext(): js.Dictionary[js.Any] = js.native
 
-    def useCreateContext(): js.Dictionary[js.Any] = js.native
-
     def required(): js.Any = js.native
 
     val Admin, Resource, EditGuesser, ListGuesser, TextInput, ImageField, NumberInput, DateTimeInput, ReferenceInput,

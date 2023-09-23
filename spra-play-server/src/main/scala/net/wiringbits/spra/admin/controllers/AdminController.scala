@@ -10,7 +10,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 // TODO: Remove authentication, which should be provided by each app
 class AdminController @Inject() (
@@ -60,8 +60,7 @@ class AdminController @Inject() (
       _ <- adminUser(request)
       _ = logger.info(s"Create row in $tableName: ${body.data}")
       id <- adminService.create(tableName, body)
-      response = Json.toJson(Map("id" -> id))
-    } yield Ok(response)
+    } yield Ok(Json.toJson(Map("id" -> id)))
   }
 
   def update(tableName: String, primaryKeyValue: String) = handleJsonBody[Map[String, String]] { request =>
