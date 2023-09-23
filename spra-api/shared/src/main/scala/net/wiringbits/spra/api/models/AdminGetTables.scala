@@ -11,7 +11,9 @@ object AdminGetTables {
         `type`: String,
         editable: Boolean,
         reference: Option[TableReference],
-        filterable: Boolean
+        filterable: Boolean,
+        isVisible: Boolean,
+        isRequiredOnCreate: Option[Boolean]
     )
     case class TableReference(referencedTable: String, referenceField: String)
 

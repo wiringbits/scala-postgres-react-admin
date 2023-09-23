@@ -30,16 +30,19 @@ object ListGuesser {
       )
 
     val widgetFields: Seq[ReactElement] = fields.map { field =>
-      val imageStyles = js.Dynamic.literal("width" -> "100px")
-      val styles = js.Dynamic.literal("& img" -> imageStyles)
-      field.`type` match {
-        case Date => DateField(DateField.Props(source = field.name, showTime = true))
-        case Text => TextField(TextField.Props(source = field.name))
-        case Email => EmailField(EmailField.Props(source = field.name))
-        case Image => ImageField(ImageField.Props(source = field.name, sx = styles))
-        case Number => NumberField(NumberField.Props(source = field.name))
-        case ColumnType.Reference(reference, source) =>
-          defaultField(reference, field.name, Seq(TextField(TextField.Props(source = source))))
+      if !field.isVisible then Fragment()
+      else {
+        val imageStyles = js.Dynamic.literal("width" -> "100px")
+        val styles = js.Dynamic.literal("& img" -> imageStyles)
+        field.`type` match {
+          case Date => DateField(DateField.Props(source = field.name, showTime = true))
+          case Text => TextField(TextField.Props(source = field.name))
+          case Email => EmailField(EmailField.Props(source = field.name))
+          case Image => ImageField(ImageField.Props(source = field.name, sx = styles))
+          case Number => NumberField(NumberField.Props(source = field.name))
+          case ColumnType.Reference(reference, source) =>
+            defaultField(reference, field.name, Seq(TextField(TextField.Props(source = source))))
+        }
       }
     }
 
@@ -58,7 +61,8 @@ object ListGuesser {
       TopToolbar.Props(
         children = Seq(
           FilterButton(FilterButton.Props(filters = filterList)),
-          ExportButton()
+          ExportButton(),
+          CreateButton()
         )
       )
     )

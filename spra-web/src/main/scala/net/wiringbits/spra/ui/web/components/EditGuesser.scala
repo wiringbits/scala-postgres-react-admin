@@ -25,22 +25,25 @@ object EditGuesser {
 
   val component: FunctionalComponent[Props] = FunctionalComponent[Props] { props =>
     val fields = ResponseGuesser.getTypesFromResponse(props.response)
+    println(fields)
     val inputs: Seq[ReactElement] = fields.map { field =>
-      field.`type` match {
-        case ColumnType.Date => DateTimeInput(DateTimeInput.Props(source = field.name, disabled = field.disabled))
-        case ColumnType.Text => TextInput(TextInput.Props(source = field.name, disabled = field.disabled))
-        case ColumnType.Email => TextInput(TextInput.Props(source = field.name, disabled = field.disabled))
-        case ColumnType.Image => ImageField(ImageField.Props(source = field.name))
-        case ColumnType.Number => NumberInput(NumberInput.Props(source = field.name, disabled = field.disabled))
-        case ColumnType.Reference(reference, source) =>
-          ReferenceInput(
-            ReferenceInput.Props(
-              source = field.name,
-              reference = reference,
-              children = Seq(SelectInput(SelectInput.Props(optionText = source, disabled = field.disabled)))
+      if !field.isVisible then Fragment()
+      else
+        field.`type` match {
+          case ColumnType.Date => DateTimeInput(DateTimeInput.Props(source = field.name, disabled = field.disabled))
+          case ColumnType.Text => TextInput(TextInput.Props(source = field.name, disabled = field.disabled))
+          case ColumnType.Email => TextInput(TextInput.Props(source = field.name, disabled = field.disabled))
+          case ColumnType.Image => ImageField(ImageField.Props(source = field.name))
+          case ColumnType.Number => NumberInput(NumberInput.Props(source = field.name, disabled = field.disabled))
+          case ColumnType.Reference(reference, source) =>
+            ReferenceInput(
+              ReferenceInput.Props(
+                source = field.name,
+                reference = reference,
+                children = Seq(SelectInput(SelectInput.Props(optionText = source, disabled = field.disabled)))
+              )
             )
-          )
-      }
+        }
     }
 
     def onClick(action: ButtonAction, ctx: js.Dictionary[js.Any]): Unit = {

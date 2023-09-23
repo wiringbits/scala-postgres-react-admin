@@ -67,7 +67,7 @@ class DatabaseTablesRepository @Inject() (database: Database)(implicit
     }
   }
 
-  def create(tableName: String, body: Map[String, String]): Future[Unit] = Future {
+  def create(tableName: String, body: Map[String, String]): Future[String] = Future {
     database.withConnection { implicit conn =>
       val primaryKeyField = dataExplorerConfig.unsafeFindByName(tableName).primaryKeyField
       val primaryKeyType = dataExplorerConfig.unsafeFindByName(tableName).primaryKeyDataType

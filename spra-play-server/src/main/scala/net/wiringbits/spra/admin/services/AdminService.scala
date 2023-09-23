@@ -51,18 +51,27 @@ class AdminService @Inject() (
             tableColumns <- databaseTablesRepository.getTableColumns(settings.tableName)
             foreignKeys <- databaseTablesRepository.getForeignKeys(settings.tableName)
 
-            visibleColumns = tableColumns.filterNot(column => hiddenColumns.contains(column.name))
-            columns = visibleColumns.map { column =>
+            columns = tableColumns.map { column =>
+              val isVisible = !hiddenColumns.contains(column.name)
               val fieldName = getColumnName(column.name, settings.primaryKeyField)
               val isEditable = !settings.nonEditableColumns.contains(column.name)
               val reference = getColumnReference(foreignKeys, column.name)
               val isFilterable = settings.filterableColumns.contains(column.name)
+              val isRequiredOnCreate =
+                if (settings.createSettings.requiredColumns.contains(column.name))
+                  Some(true)
+                else if (settings.createSettings.nonRequiredColumns.contains(column.name))
+                  Some(false)
+                else
+                  None
               AdminGetTables.Response.TableColumn(
                 name = fieldName,
                 `type` = column.`type`,
                 editable = isEditable,
                 reference = reference,
-                filterable = isFilterable
+                filterable = isFilterable,
+                isVisible = isVisible,
+                isRequiredOnCreate = isRequiredOnCreate
               )
             }
           } yield AdminGetTables.Response.DatabaseTable(
@@ -147,7 +156,7 @@ class AdminService @Inject() (
     } yield maskedTableData
   }
 
-  def create(tableName: String, request: AdminCreateTable.Request): Future[Unit] = {
+  def create(tableName: String, request: AdminCreateTable.Request): Future[String] = {
     val body = request.data
     val validations = {
       validateTableName(tableName)
@@ -159,8 +168,8 @@ class AdminService @Inject() (
 
     for {
       _ <- validations
-      _ <- databaseTablesRepository.create(tableName, body)
-    } yield ()
+      id <- databaseTablesRepository.create(tableName, body)
+    } yield id
   }
 
   private def validateMissingFields(tableName: String, data: Map[String, String]): Future[Unit] = {
