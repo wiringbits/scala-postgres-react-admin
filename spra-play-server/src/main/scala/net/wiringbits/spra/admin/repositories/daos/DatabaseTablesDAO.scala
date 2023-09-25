@@ -235,7 +235,7 @@ object DatabaseTablesDAO {
       primaryKeyType: PrimaryKeyDataType = PrimaryKeyDataType.UUID
   )(implicit
       conn: Connection
-  ): Unit = {
+  ): String = {
     val sql = QueryBuilder.create(tableName, body, primaryKeyField, primaryKeyType)
     val preparedStatement = conn.prepareStatement(sql)
 
@@ -253,7 +253,9 @@ object DatabaseTablesDAO {
       val value = body(body.keys.toList(j - i - 1))
       preparedStatement.setObject(j, value)
     }
-    val _ = preparedStatement.executeUpdate()
+    val result = preparedStatement.executeQuery()
+    result.next()
+    result.getString(1)
   }
 
   def update(

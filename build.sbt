@@ -32,6 +32,7 @@ val sttp = "3.5.0"
 val anorm = "2.7.0"
 val scalaTestPlusPlay = "6.0.0-M6"
 val scalaTestPlusMockito = "3.2.15.0"
+val reactAdmin = "4.14.3"
 
 val consoleDisabledOptions = Seq("-Xfatal-warnings", "-Ywarn-unused", "-Ywarn-unused-import")
 
@@ -80,24 +81,12 @@ lazy val baseLibSettings: Project => Project = _.settings(
       "-encoding",
       "UTF-8",
       "-feature",
-      "-language:implicitConversions"
+      "-language:implicitConversions",
       // disabled during the migration
       // "-Xfatal-warnings"
-    ) ++
-      (CrossVersion.partialVersion(scalaVersion.value) match {
-        case Some((3, _)) =>
-          Seq(
-            "-unchecked",
-            "-source:3.0-migration"
-          )
-        case _ =>
-          Seq(
-            "-deprecation",
-            "-Xfatal-warnings",
-            "-Wunused:imports,privates,locals",
-            "-Wvalue-discard"
-          )
-      })
+      "-unchecked",
+      "-source:3.0-migration"
+    )
   },
   libraryDependencies ++= Seq(
     "org.scalatest" %%% "scalatest" % "3.2.12" % Test
@@ -261,12 +250,12 @@ lazy val spraWeb = (project in file("spra-web"))
       "react" -> "17.0.0",
       "react-dom" -> "17.0.0",
       "react-scripts" -> "5.0.0",
-      "react-admin" -> "4.1.0",
-      "ra-ui-materialui" -> "4.1.0",
-      "ra-data-simple-rest" -> "4.1.0",
-      "ra-i18n-polyglot" -> "4.1.0",
-      "ra-language-english" -> "4.1.0",
-      "ra-core" -> "4.1.0",
+      "react-admin" -> reactAdmin,
+      "ra-ui-materialui" -> reactAdmin,
+      "ra-data-simple-rest" -> reactAdmin,
+      "ra-i18n-polyglot" -> reactAdmin,
+      "ra-language-english" -> reactAdmin,
+      "ra-core" -> reactAdmin,
       "@mui/material" -> "5.8.1",
       "@emotion/styled" -> "11.8.1"
     )

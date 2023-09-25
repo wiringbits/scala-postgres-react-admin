@@ -3,6 +3,7 @@ package net.wiringbits.spra.admin.controllers
 import net.wiringbits.spra.admin.config.DataExplorerConfig
 import net.wiringbits.spra.admin.services.AdminService
 import net.wiringbits.spra.admin.utils.models.QueryParameters
+import net.wiringbits.spra.api.models
 import net.wiringbits.spra.api.models.*
 import org.slf4j.LoggerFactory
 import play.api.libs.json.Json
@@ -53,14 +54,13 @@ class AdminController @Inject() (
     } yield Ok(Json.toJson(response.map(Json.toJson(_))))
   }
 
-  def create(tableName: String) = handleJsonBody[AdminCreateTable.Request] { request =>
-    val body = request.body
+  def create(tableName: String) = handleJsonBody[Map[String, String]] { request =>
+    val body = AdminCreateTable.Request(request.body)
     for {
       _ <- adminUser(request)
       _ = logger.info(s"Create row in $tableName: ${body.data}")
-      _ <- adminService.create(tableName, body)
-      response = AdminCreateTable.Response()
-    } yield Ok(Json.toJson(response))
+      id <- adminService.create(tableName, body)
+    } yield Ok(Json.toJson(Map("id" -> id)))
   }
 
   def update(tableName: String, primaryKeyValue: String) = handleJsonBody[Map[String, String]] { request =>

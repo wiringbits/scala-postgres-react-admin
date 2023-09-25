@@ -7,6 +7,12 @@ import scala.scalajs.js
 import scala.scalajs.js.|
 
 object ReferenceInput extends ExternalComponent {
-  case class Props(source: String, reference: String, children: Seq[ReactElement])
+  case class Props(
+      source: String,
+      reference: String,
+      children: Seq[ReactElement],
+      isRequired: Boolean = false,
+      validate: js.UndefOr[js.Any] = js.undefined
+  )
   override val component: String | js.Object = ReactAdmin.ReferenceInput
 }

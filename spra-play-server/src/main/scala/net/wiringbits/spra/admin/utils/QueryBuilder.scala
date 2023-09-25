@@ -29,6 +29,7 @@ object QueryBuilder {
       |VALUES (
       |  ${sqlValues.toString()}
       |)
+      |RETURNING $primaryKeyField::TEXT
       |""".stripMargin
   }
 

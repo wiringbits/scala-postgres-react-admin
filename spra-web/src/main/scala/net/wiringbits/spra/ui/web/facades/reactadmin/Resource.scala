@@ -6,6 +6,6 @@ import scala.scalajs.js
 import scala.scalajs.js.|
 
 object Resource extends ExternalComponent {
-  case class Props(name: String, edit: js.Object, list: js.Object)
+  case class Props(name: String, edit: js.Object, list: js.Object, create: js.Object)
   override val component: String | js.Object = ReactAdmin.Resource
 }

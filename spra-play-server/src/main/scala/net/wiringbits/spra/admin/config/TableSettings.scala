@@ -25,6 +25,11 @@ import scala.util.Try
   *   columns that are filterable via react-admin
   */
 
+case class CreateSettings(requiredColumns: List[String] = List.empty, nonRequiredColumns: List[String] = List.empty) {
+  override def toString: String =
+    s"CreateSettings(requiredColumns = $requiredColumns, nonRequiredColumns = $nonRequiredColumns)"
+}
+
 case class TableSettings(
     tableName: String,
     primaryKeyField: String,
@@ -34,13 +39,14 @@ case class TableSettings(
     canBeDeleted: Boolean = true,
     primaryKeyDataType: PrimaryKeyDataType = PrimaryKeyDataType.UUID,
     columnTypeOverrides: Map[String, CustomDataType] = Map.empty,
-    filterableColumns: List[String] = List.empty
+    filterableColumns: List[String] = List.empty,
+    createSettings: CreateSettings = CreateSettings()
 ) {
   override def toString: String =
     s"""TableSettings(tableName = $tableName, primaryKeyField = $primaryKeyField, referenceField = $referenceField,
        hiddenColumns = $hiddenColumns, nonEditableColumns = $nonEditableColumns, canBeDeleted = $canBeDeleted,
        primaryKeyDataType = $primaryKeyDataType, columnTypeOverrides = $columnTypeOverrides,
-       filterableColumns = $filterableColumns)"""
+       filterableColumns = $filterableColumns, createSettings = $createSettings)"""
 }
 
 object TableSettings {
@@ -92,7 +98,11 @@ object TableSettings {
         case string => throw new RuntimeException(s"Invalid primary key data type: $string")
       },
       columnTypeOverrides = handleColumnTypeOverrides(),
-      filterableColumns = getList[String]("filterableColumns")
+      filterableColumns = getList[String]("filterableColumns"),
+      createSettings = CreateSettings(
+        requiredColumns = getList[String]("createFilter.requiredColumns"),
+        nonRequiredColumns = getList[String]("createFilter.nonRequiredColumns")
+      )
     )
   }
 }

@@ -1,7 +1,7 @@
 package net.wiringbits.spra.ui.web
 
 import net.wiringbits.spra.api.models.AdminGetTables
-import net.wiringbits.spra.ui.web.components.{EditGuesser, ListGuesser}
+import net.wiringbits.spra.ui.web.components.{CreateGuesser, EditGuesser, ListGuesser}
 import net.wiringbits.spra.ui.web.facades.reactadmin.{Admin, Resource}
 import net.wiringbits.spra.ui.web.facades.simpleRestProvider
 import net.wiringbits.spra.ui.web.models.DataExplorerSettings
@@ -46,7 +46,8 @@ object AdminView {
           Resource.Props(
             name = table.name,
             list = ListGuesser(table),
-            edit = EditGuesser(table, props.dataExplorerSettings)
+            edit = EditGuesser(table, props.dataExplorerSettings),
+            create = CreateGuesser(table)
           )
         ).withKey(table.name)
       }
