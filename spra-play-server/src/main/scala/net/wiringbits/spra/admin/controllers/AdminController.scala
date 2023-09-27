@@ -54,8 +54,8 @@ class AdminController @Inject() (
     } yield Ok(Json.toJson(response.map(Json.toJson(_))))
   }
 
-  def create(tableName: String) = handleJsonBody[Map[String, String]] { request =>
-    val body = AdminCreateTable.Request(request.body)
+  def create(tableName: String) = handleJsonBody[AdminCreateTable.Request] { request =>
+    val body = request.body
     for {
       _ <- adminUser(request)
       _ = logger.info(s"Create row in $tableName: ${body.data}")
@@ -63,9 +63,9 @@ class AdminController @Inject() (
     } yield Ok(Json.toJson(AdminCreateTable.Response(id)))
   }
 
-  def update(tableName: String, primaryKeyValue: String) = handleJsonBody[Map[String, String]] { request =>
+  def update(tableName: String, primaryKeyValue: String) = handleJsonBody[AdminUpdateTable.Request] { request =>
     val primaryKeyFieldName = dataExplorerConfig.unsafeFindByName(tableName).primaryKeyField
-    val body = request.body.map {
+    val body = request.body.data.map {
       case ("id", value) => primaryKeyFieldName -> value
       case x => x
     }

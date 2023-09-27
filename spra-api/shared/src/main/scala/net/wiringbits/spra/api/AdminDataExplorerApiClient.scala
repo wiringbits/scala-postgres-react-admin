@@ -24,7 +24,7 @@ trait AdminDataExplorerApiClient {
 
   def createItem(tableName: String, request: AdminCreateTable.Request): Future[AdminCreateTable.Response]
 
-  def updateItem(tableName: String, id: String, request: Map[String, String]): Future[AdminUpdateTable.Response]
+  def updateItem(tableName: String, id: String, request: AdminUpdateTable.Request): Future[AdminUpdateTable.Response]
 
   def deleteItem(tableName: String, id: String): Future[AdminDeleteTable.Response]
 }
@@ -152,7 +152,7 @@ object AdminDataExplorerApiClient {
     override def updateItem(
         tableName: String,
         id: String,
-        request: Map[String, String]
+        request: AdminUpdateTable.Request
     ): Future[AdminUpdateTable.Response] = {
       val path = ServerAPI.path :+ "admin" :+ "tables" :+ tableName :+ id
       val uri = ServerAPI.withPath(path)
