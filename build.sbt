@@ -27,7 +27,7 @@ inThisBuild(
 resolvers += Resolver.sonatypeRepo("releases")
 
 val play = "2.9.0-M6"
-val playJson = "2.10.0-RC9"
+val playJson = "2.10.1"
 val sttp = "3.5.0"
 val anorm = "2.7.0"
 val scalaTestPlusPlay = "6.0.0-M6"

@@ -60,7 +60,7 @@ class AdminController @Inject() (
       _ <- adminUser(request)
       _ = logger.info(s"Create row in $tableName: ${body.data}")
       id <- adminService.create(tableName, body)
-    } yield Ok(Json.toJson(Map("id" -> id)))
+    } yield Ok(Json.toJson(AdminCreateTable.Response(id)))
   }
 
   def update(tableName: String, primaryKeyValue: String) = handleJsonBody[Map[String, String]] { request =>
