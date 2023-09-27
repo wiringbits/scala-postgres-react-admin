@@ -21,9 +21,7 @@ package object models {
   implicit val errorResponseFormat: Format[ErrorResponse] = Json.format[ErrorResponse]
 
   implicit def optionFormat[T](using formatter: Format[T]): Format[Option[T]] = Format[Option[T]](
-    fjs = Reads[Option[T]] { x =>
-      x.validateOpt[T]
-    },
+    fjs = Reads[Option[T]](_.validateOpt[T]),
     tjs = Writes[Option[T]] {
       case Some(value) => Json.toJson(value)
       case None => Json.toJson("")
