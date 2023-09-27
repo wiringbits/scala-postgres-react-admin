@@ -9,14 +9,16 @@ import net.wiringbits.spra.api.models.{AdminCreateTable, AdminUpdateTable}
 import org.apache.commons.lang3.StringUtils
 import play.api.inject
 import play.api.inject.guice.GuiceApplicationBuilder
+import utils.AdminUtils
 
 import java.util.UUID
 import java.util.regex.Pattern
 import scala.util.Random
 
-class AdminControllerSpec extends PlayPostgresSpec {
+class AdminControllerSpec extends PlayPostgresSpec with AdminUtils {
   val dataExplorerConfigTables: List[TableSettings] = List(
     TableSettings("users", "user_id"), // "UUID" default
+    TableSettings("user_logs", "user_log_id", Some("users")), // "UUID" default
     TableSettings(
       tableName = "uuid_table",
       primaryKeyField = "id",
@@ -42,11 +44,12 @@ class AdminControllerSpec extends PlayPostgresSpec {
   val dataExplorerConfig: DataExplorerConfig = DataExplorerConfig("http://localhost:9000", dataExplorerConfigTables)
   def usersSettings: TableSettings = dataExplorerConfig.tablesSettings.headOption.value
   // TODO: loop through dataExplorerSettings for each table instead of defining usersSettings, uuidSettings
-  def uuidSettings: TableSettings = dataExplorerConfig.tablesSettings(1)
-  def serialSettings: TableSettings = dataExplorerConfig.tablesSettings(2)
-  def bigSerialSettings: TableSettings = dataExplorerConfig.tablesSettings(3)
-  def serialOverflowSettings: TableSettings = dataExplorerConfig.tablesSettings(4)
-  def bigSerialOverflowSettings: TableSettings = dataExplorerConfig.tablesSettings(5)
+  def userLogsSettings: TableSettings = dataExplorerConfig.tablesSettings(1)
+  def uuidSettings: TableSettings = dataExplorerConfig.tablesSettings(2)
+  def serialSettings: TableSettings = dataExplorerConfig.tablesSettings(3)
+  def bigSerialSettings: TableSettings = dataExplorerConfig.tablesSettings(4)
+  def serialOverflowSettings: TableSettings = dataExplorerConfig.tablesSettings(5)
+  def bigSerialOverflowSettings: TableSettings = dataExplorerConfig.tablesSettings(6)
 
   def isValidUUID(str: String): Boolean = {
     if (str == null) return false
@@ -66,14 +69,14 @@ class AdminControllerSpec extends PlayPostgresSpec {
   "GET /admin/tables" should {
     "return tables from modules" in withApiClient { client =>
       val response = client.getTables.futureValue
-      val tableName = response.data.map(_.name).headOption.value // users
-      tableName must be(usersSettings.tableName)
-      val uuidTable = response.data.map(_.name)(1) // table 2
-      uuidTable must be(uuidSettings.tableName)
-      val serialTable = response.data.map(_.name)(2) // table 3
-      serialTable must be(serialSettings.tableName)
-      val bigSerialTable = response.data.map(_.name)(3) // table 4
-      bigSerialTable must be(bigSerialSettings.tableName)
+      response.data.map(_.name) match
+        case List(users, userLogs, uuidTable, serialTable, bigSerialTable, _, _) =>
+          users must be(usersSettings.tableName)
+          userLogs must be(userLogsSettings.tableName)
+          uuidTable must be(uuidSettings.tableName)
+          serialTable must be(serialSettings.tableName)
+          bigSerialTable must be(bigSerialSettings.tableName)
+        case list => fail(s"Unexpected response: ${list.mkString(", ")}")
     }
 
     "return extra config from module" in withApiClient { client =>
@@ -83,24 +86,55 @@ class AdminControllerSpec extends PlayPostgresSpec {
       usersSettings.referenceField must be(None)
       usersSettings.hiddenColumns must be(List.empty)
       usersSettings.nonEditableColumns must be(List.empty)
+      usersSettings.canBeDeleted must be(true)
+      usersSettings.columnTypeOverrides must be(Map.empty)
+      usersSettings.filterableColumns must be(List.empty)
+      usersSettings.createSettings.nonRequiredColumns must be(List.empty)
+      usersSettings.createSettings.requiredColumns must be(List.empty)
 
       val head2 = response.data(1)
-      head2.primaryKeyName must be(uuidSettings.primaryKeyField)
+      head2.primaryKeyName must be(userLogsSettings.primaryKeyField)
+      userLogsSettings.referenceField must be(Some("users"))
+      userLogsSettings.hiddenColumns must be(List.empty)
+      userLogsSettings.nonEditableColumns must be(List.empty)
+      userLogsSettings.canBeDeleted must be(true)
+      userLogsSettings.columnTypeOverrides must be(Map.empty)
+      userLogsSettings.filterableColumns must be(List.empty)
+      userLogsSettings.createSettings.nonRequiredColumns must be(List.empty)
+      userLogsSettings.createSettings.requiredColumns must be(List.empty)
+
+      val head3 = response.data(2)
+      head3.primaryKeyName must be(uuidSettings.primaryKeyField)
       uuidSettings.referenceField must be(None)
       uuidSettings.hiddenColumns must be(List.empty)
       uuidSettings.nonEditableColumns must be(List.empty)
+      uuidSettings.canBeDeleted must be(true)
+      uuidSettings.columnTypeOverrides must be(Map.empty)
+      uuidSettings.filterableColumns must be(List.empty)
+      uuidSettings.createSettings.nonRequiredColumns must be(List.empty)
+      uuidSettings.createSettings.requiredColumns must be(List.empty)
 
-      val head3 = response.data(2)
-      head3.primaryKeyName must be(serialSettings.primaryKeyField)
+      val head4 = response.data(3)
+      head4.primaryKeyName must be(serialSettings.primaryKeyField)
       serialSettings.referenceField must be(None)
       serialSettings.hiddenColumns must be(List.empty)
       serialSettings.nonEditableColumns must be(List.empty)
+      serialSettings.canBeDeleted must be(true)
+      serialSettings.columnTypeOverrides must be(Map.empty)
+      serialSettings.filterableColumns must be(List.empty)
+      serialSettings.createSettings.nonRequiredColumns must be(List.empty)
+      serialSettings.createSettings.requiredColumns must be(List.empty)
 
-      val head4 = response.data(3)
-      head4.primaryKeyName must be(bigSerialSettings.primaryKeyField)
+      val head5 = response.data(4)
+      head5.primaryKeyName must be(bigSerialSettings.primaryKeyField)
       bigSerialSettings.referenceField must be(None)
       bigSerialSettings.hiddenColumns must be(List.empty)
       bigSerialSettings.nonEditableColumns must be(List.empty)
+      bigSerialSettings.canBeDeleted must be(true)
+      bigSerialSettings.columnTypeOverrides must be(Map.empty)
+      bigSerialSettings.filterableColumns must be(List.empty)
+      bigSerialSettings.createSettings.nonRequiredColumns must be(List.empty)
+      bigSerialSettings.createSettings.requiredColumns must be(List.empty)
     }
   }
 
@@ -121,6 +155,17 @@ class AdminControllerSpec extends PlayPostgresSpec {
       response.size must be(1)
       name must be(nameValue)
       email must be(emailValue)
+    }
+
+    "return data from user logs table" in withApiClient { implicit client =>
+      val user = createUser.futureValue
+      val userLog = createUserLog(user.userId).futureValue
+
+      val response =
+        client.getTableMetadata(userLogsSettings.tableName, List("message", "ASC"), List(0, 9), "{}").futureValue.head
+      response("message") mustBe userLog.message
+      response("user_id") mustBe user.userId
+      response("id") mustBe userLog.userLogId
     }
 
     "return data from uuid table" in withApiClient { client =>
@@ -610,7 +655,7 @@ class AdminControllerSpec extends PlayPostgresSpec {
       val password = "wiringbits"
       val request = AdminCreateTable.Request(Map("name" -> name, "email" -> email, "password" -> password))
       val response = client.createItem("users", request).futureValue
-      response.noData must be(empty)
+      response.id.nonEmpty mustBe true
     }
 
     "create a new row for all tables" in withApiClient { client =>
@@ -620,7 +665,7 @@ class AdminControllerSpec extends PlayPostgresSpec {
       for (table <- tables) {
         val request = AdminCreateTable.Request(Map("name" -> name))
         val response = client.createItem(table.tableName, request).futureValue
-        response.noData must be(empty)
+        response.id.nonEmpty mustBe true
       }
     }
 
@@ -634,6 +679,22 @@ class AdminControllerSpec extends PlayPostgresSpec {
         client.getTableMetadata(usersSettings.tableName, List("name", "ASC"), List(0, 9), "{}").futureValue
 
       responseMetadata.head.nonEmpty mustBe true
+    }
+    
+    "return new user id" in withApiClient { implicit client =>
+      val user = createUser.futureValue
+      val response = client.getTableMetadata(usersSettings.tableName, List("name", "ASC"), List(0, 9), "{}").futureValue
+      val userId = response.head("id")
+
+      userId mustBe user.userId
+    }
+
+    "create a new user log" in withApiClient { implicit client =>
+      val user = createUser.futureValue
+      val request = AdminCreateTable.Request(Map("user_id" -> user.userId, "message" -> "Wiringbits"))
+
+      val response = client.createItem("user_logs", request).futureValue
+      response.id.nonEmpty mustBe true
     }
 
     "fail when a mandatory field is not sent" in withApiClient { client =>
@@ -659,7 +720,7 @@ class AdminControllerSpec extends PlayPostgresSpec {
       val table = serialOverflowSettings
       val request = AdminCreateTable.Request(Map("name" -> name))
       val ignore = client.createItem(table.tableName, request).futureValue
-      ignore.noData must be(empty)
+      ignore.id.nonEmpty mustBe true
       val request2 = AdminCreateTable.Request(Map("name" -> s"asdf"))
       val error = client.createItem(table.tableName, request2).expectError
       error must be(s"ERROR: integer out of range")
@@ -669,7 +730,7 @@ class AdminControllerSpec extends PlayPostgresSpec {
       val table = bigSerialOverflowSettings
       val request = AdminCreateTable.Request(Map("name" -> name))
       val ignore = client.createItem(table.tableName, request).futureValue
-      ignore.noData must be(empty)
+      ignore.id.nonEmpty mustBe true
       val request2 = AdminCreateTable.Request(Map("name" -> s"asdf"))
       val error = client.createItem(table.tableName, request2).expectError
       error must be(

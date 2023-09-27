@@ -8,7 +8,7 @@ import scala.collection.mutable
 object QueryBuilder {
   def create(
       tableName: String,
-      body: Map[String, String],
+      fieldsAndValues: Map[TableColumn, String],
       primaryKeyField: String,
       primaryKeyType: PrimaryKeyDataType = PrimaryKeyDataType.UUID
   ): String = {
@@ -18,9 +18,9 @@ object QueryBuilder {
       case PrimaryKeyDataType.Serial => new mutable.StringBuilder("DEFAULT")
       case PrimaryKeyDataType.BigSerial => new mutable.StringBuilder("DEFAULT")
     }
-    for ((key, _) <- body) {
-      sqlFields.append(s", $key")
-      sqlValues.append(s", ?")
+    for ((tableColumn, _) <- fieldsAndValues) {
+      sqlFields.append(s", ${tableColumn.name}")
+      sqlValues.append(s", ?::${tableColumn.`type`}")
     }
 
     s"""

@@ -5,7 +5,7 @@ import play.api.libs.json.{Format, Json, Reads, Writes}
 object AdminCreateTable {
   case class Request(data: Map[String, String])
 
-  case class Response(noData: String = "")
+  case class Response(id: String)
 
   implicit val adminCreateTableRequestFormat: Format[Request] = Format[Request](
     // We have to handle null as Options

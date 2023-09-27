@@ -37,7 +37,9 @@ object CreateGuesser {
                 ReferenceInput.Props(
                   source = field.name,
                   reference = reference,
-                  children = Seq(SelectInput(SelectInput.Props(optionText = source, disabled = field.disabled))),
+                  children = Seq(
+                    SelectInput(SelectInput.Props(optionText = source, isRequired = isRequired, validate = required))
+                  ),
                   isRequired = isRequired,
                   validate = required
                 )

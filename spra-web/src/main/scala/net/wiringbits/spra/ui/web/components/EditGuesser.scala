@@ -25,7 +25,7 @@ object EditGuesser {
 
   val component: FunctionalComponent[Props] = FunctionalComponent[Props] { props =>
     val fields = ResponseGuesser.getTypesFromResponse(props.response)
-    println(fields)
+
     val inputs: Seq[ReactElement] = fields.map { field =>
       if !field.isVisible then Fragment()
       else

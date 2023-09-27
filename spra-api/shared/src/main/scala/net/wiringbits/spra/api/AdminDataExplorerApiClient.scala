@@ -142,7 +142,8 @@ object AdminDataExplorerApiClient {
 
       prepareRequest[AdminCreateTable.Response]
         .post(uri)
-        .body(Json.toJson(request).toString())
+        // TODO: check the AdminCreateTable.Request model, it isn't parsing correctly to json
+        .body(Json.toJson(request.data).toString())
         .send(backend)
         .map(_.body)
         .flatMap(Future.fromTry)
