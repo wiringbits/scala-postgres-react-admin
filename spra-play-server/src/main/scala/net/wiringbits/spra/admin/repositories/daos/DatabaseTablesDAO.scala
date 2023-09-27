@@ -252,7 +252,7 @@ object DatabaseTablesDAO {
     for (j <- i + 1 to body.size + i) {
       val value = body(body.keys.toList(j - i - 1))
       // We have to check if the value is a UUID because we need to set it as an UUID object in the prepared statement
-      DAOUtils.validateIsUUID(value) match
+      DAOUtils.validateUUID(value) match
         case Some(uuid) => preparedStatement.setObject(j, uuid)
         case None => preparedStatement.setObject(j, value)
     }
