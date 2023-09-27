@@ -71,9 +71,15 @@ class DatabaseTablesRepository @Inject() (database: Database)(implicit
     database.withConnection { implicit conn =>
       val primaryKeyField = dataExplorerConfig.unsafeFindByName(tableName).primaryKeyField
       val primaryKeyType = dataExplorerConfig.unsafeFindByName(tableName).primaryKeyDataType
+      val columns = DatabaseTablesDAO.getTableColumns(tableName)
+      val fieldsAndValues = body.map { case (key, value) =>
+        val field =
+          columns.find(_.name == key).getOrElse(throw new RuntimeException(s"Invalid property in body request: $key"))
+        (field, value)
+      }
       DatabaseTablesDAO.create(
         tableName = tableName,
-        body = body,
+        fieldsAndValues = fieldsAndValues,
         primaryKeyField = primaryKeyField,
         primaryKeyType = primaryKeyType
       )

@@ -230,13 +230,13 @@ object DatabaseTablesDAO {
   }
   def create(
       tableName: String,
-      body: Map[String, String],
+      fieldsAndValues: Map[TableColumn, String],
       primaryKeyField: String,
       primaryKeyType: PrimaryKeyDataType = PrimaryKeyDataType.UUID
   )(implicit
       conn: Connection
   ): String = {
-    val sql = QueryBuilder.create(tableName, body, primaryKeyField, primaryKeyType)
+    val sql = QueryBuilder.create(tableName, fieldsAndValues, primaryKeyField, primaryKeyType)
     val preparedStatement = conn.prepareStatement(sql)
 
     var i = 0
@@ -249,12 +249,9 @@ object DatabaseTablesDAO {
     // eg. NULL can be used in MySQL to generate default value in an autoincrement column, but not Postgres unfortunately
     // Postgres: INSERT INTO test_serial (id) VALUES(DEFAULT); MySQL: INSERT INTO table (id) VALUES(NULL)
 
-    for (j <- i + 1 to body.size + i) {
-      val value = body(body.keys.toList(j - i - 1))
-      // We have to check if the value is a UUID because we need to set it as an UUID object in the prepared statement
-      DAOUtils.validateUUID(value) match
-        case Some(uuid) => preparedStatement.setObject(j, uuid)
-        case None => preparedStatement.setObject(j, value)
+    for (j <- i + 1 to fieldsAndValues.size + i) {
+      val value = fieldsAndValues(fieldsAndValues.keys.toList(j - i - 1))
+      preparedStatement.setObject(j, value)
     }
     val result = preparedStatement.executeQuery()
     result.next()
