@@ -5,7 +5,7 @@ import controllers.common.PlayPostgresSpec
 import net.wiringbits.spra.admin.AppRouter
 import net.wiringbits.spra.admin.config.{DataExplorerConfig, PrimaryKeyDataType, TableSettings}
 import net.wiringbits.spra.admin.controllers.{AdminController, ImagesController}
-import net.wiringbits.spra.api.models.AdminCreateTable
+import net.wiringbits.spra.api.models.{AdminCreateTable, AdminUpdateTable}
 import org.apache.commons.lang3.StringUtils
 import play.api.inject
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -697,7 +697,7 @@ class AdminControllerSpec extends PlayPostgresSpec {
       val userId = response.headOption.value.find(_._1 == "id").value._2
 
       val email = "wiringbits@wiringbits.net"
-      val updateRequest = Map("email" -> email)
+      val updateRequest = AdminUpdateTable.Request(Map("email" -> email))
       val updateResponse = client.updateItem(usersSettings.tableName, userId, updateRequest).futureValue
 
       val newResponse = client.viewItem(usersSettings.tableName, userId).futureValue
@@ -717,7 +717,7 @@ class AdminControllerSpec extends PlayPostgresSpec {
         val id = response.headOption.value.find(_._1 == "id").value._2
 
         val name = "wiringbitsbitsbits"
-        val updateRequest = Map("name" -> name)
+        val updateRequest = AdminUpdateTable.Request(Map("name" -> name))
         val updateResponse = client.updateItem(table.tableName, id, updateRequest).futureValue
 
         val newResponse = client.viewItem(table.tableName, id).futureValue
@@ -737,7 +737,7 @@ class AdminControllerSpec extends PlayPostgresSpec {
       val userId = response.headOption.value.find(_._1 == "id").value._2
 
       val email = "wiringbits@wiringbits.net"
-      val updateRequest = Map("nonExistentField" -> email)
+      val updateRequest = AdminUpdateTable.Request(Map("nonExistentField" -> email))
       val error = client.updateItem("users", userId, updateRequest).expectError
       error must be("A field doesn't correspond to this table schema")
     }
@@ -754,7 +754,7 @@ class AdminControllerSpec extends PlayPostgresSpec {
         val id = response.headOption.value.find(_._1 == "id").value._2
 
         val name = "wiringbits"
-        val updateRequest = Map("nonExistentField" -> name)
+        val updateRequest = AdminUpdateTable.Request(Map("nonExistentField" -> name))
         val error = client.updateItem(table.tableName, id, updateRequest).expectError
         error must be("A field doesn't correspond to this table schema")
       }

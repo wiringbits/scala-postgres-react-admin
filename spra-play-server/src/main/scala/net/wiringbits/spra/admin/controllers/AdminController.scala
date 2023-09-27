@@ -63,9 +63,9 @@ class AdminController @Inject() (
     } yield Ok(Json.toJson(Map("id" -> id)))
   }
 
-  def update(tableName: String, primaryKeyValue: String) = handleJsonBody[Map[String, String]] { request =>
+  def update(tableName: String, primaryKeyValue: String) = handleJsonBody[AdminUpdateTable.Request] { request =>
     val primaryKeyFieldName = dataExplorerConfig.unsafeFindByName(tableName).primaryKeyField
-    val body = request.body.map {
+    val body = request.body.data.map {
       case ("id", value) => primaryKeyFieldName -> value
       case x => x
     }
