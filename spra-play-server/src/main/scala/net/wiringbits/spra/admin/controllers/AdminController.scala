@@ -54,8 +54,8 @@ class AdminController @Inject() (
     } yield Ok(Json.toJson(response.map(Json.toJson(_))))
   }
 
-  def create(tableName: String) = handleJsonBody[Map[String, String]] { request =>
-    val body = AdminCreateTable.Request(request.body)
+  def create(tableName: String) = handleJsonBody[AdminCreateTable.Request] { request =>
+    val body = request.body
     for {
       _ <- adminUser(request)
       _ = logger.info(s"Create row in $tableName: ${body.data}")
