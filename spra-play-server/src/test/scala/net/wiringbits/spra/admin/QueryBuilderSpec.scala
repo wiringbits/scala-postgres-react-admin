@@ -14,14 +14,18 @@ class QueryBuilderSpec extends AnyWordSpec {
           |INSERT INTO users
           |  (user_id, email, name)
           |VALUES (
-          |  ?, ?, ?
+          |  ?, ?::citext, ?::text
           |)
+          |RETURNING user_id::TEXT
           |""".stripMargin
       val tableName = "users"
-      val body = Map("email" -> "wiringbits@wiringbits.net", "name" -> "wiringbits")
+      val body =
+        Map(TableColumn("email", "citext") -> "wiringbits@wiringbits.net", TableColumn("name", "text") -> "wiringbits")
       val primaryKeyField = "user_id"
 
       val response = QueryBuilder.create(tableName, body, primaryKeyField)
+      println(response)
+      println(expected)
       response must be(expected)
     }
 
@@ -33,9 +37,10 @@ class QueryBuilderSpec extends AnyWordSpec {
           |VALUES (
           |  ?
           |)
+          |RETURNING user_id::TEXT
           |""".stripMargin
       val tableName = "users"
-      val body = Map.empty[String, String]
+      val body = Map.empty[TableColumn, String]
       val primaryKeyField = "user_id"
 
       val response = QueryBuilder.create(tableName, body, primaryKeyField)
