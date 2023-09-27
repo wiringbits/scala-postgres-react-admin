@@ -34,26 +34,19 @@ object CreateGuesser {
               NumberInput(NumberInput.Props(source = field.name, isRequired = isRequired, validate = required))
             case ColumnType.Reference(reference, source) =>
               ReferenceInput(
-                ReferenceInput.Props(
-                  source = field.name,
-                  reference = reference,
-                  children = Seq(
-                    SelectInput(SelectInput.Props(optionText = source, isRequired = isRequired, validate = required))
-                  ),
-                  isRequired = isRequired,
-                  validate = required
-                )
-              )
+                source = field.name,
+                reference = reference,
+                isRequired = isRequired,
+                validate = required
+              )(SelectInput(SelectInput.Props(optionText = source, isRequired = isRequired, validate = required)))
           }
         }
         .getOrElse(Fragment())
     }
 
     Create(
-      Create.Props(
-        SimpleForm(
-          SimpleForm.Props(toolbar = Fragment(), children = inputs :+ SaveButton())
-        )
+      SimpleForm(
+        SimpleForm.Props(toolbar = Fragment(), children = inputs :+ SaveButton())
       )
     )
   }
