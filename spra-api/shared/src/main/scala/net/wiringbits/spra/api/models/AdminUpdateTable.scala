@@ -7,7 +7,10 @@ object AdminUpdateTable {
   case class Response(id: String)
 
   implicit val adminUpdateTableRequestFormat: Format[Request] = Format[Request](
-    fjs = implicitly[Reads[Map[String, String]]].map(Request.apply),
+    // We have to handle null as Options
+    fjs = implicitly[Reads[Map[String, Option[String]]]]
+      .map(handleMapWithOptionalValue)
+      .map(Request.apply),
     tjs = Writes[Request](x => Json.toJson(x.data))
   )
 
