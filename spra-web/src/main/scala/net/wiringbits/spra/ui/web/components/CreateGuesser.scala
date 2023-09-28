@@ -23,38 +23,29 @@ object CreateGuesser {
 
           field.`type` match {
             case ColumnType.Date =>
-              DateTimeInput(DateTimeInput.Props(source = field.name, isRequired = isRequired, validate = required))
+              DateTimeInput(source = field.name, isRequired = isRequired, validate = required)
             case ColumnType.Text =>
-              TextInput(TextInput.Props(source = field.name, isRequired = isRequired, validate = required))
+              TextInput(source = field.name, isRequired = isRequired, validate = required)
             case ColumnType.Email =>
-              TextInput(TextInput.Props(source = field.name, isRequired = isRequired, validate = required))
+              TextInput(source = field.name, isRequired = isRequired, validate = required)
             case ColumnType.Image =>
-              ImageField(ImageField.Props(source = field.name, isRequired = isRequired, validate = required))
+              ImageField(source = field.name, isRequired = isRequired, validate = required)
             case ColumnType.Number =>
-              NumberInput(NumberInput.Props(source = field.name, isRequired = isRequired, validate = required))
+              NumberInput(source = field.name, isRequired = isRequired, validate = required)
             case ColumnType.Reference(reference, source) =>
               ReferenceInput(
-                ReferenceInput.Props(
-                  source = field.name,
-                  reference = reference,
-                  children = Seq(
-                    SelectInput(SelectInput.Props(optionText = source, isRequired = isRequired, validate = required))
-                  ),
-                  isRequired = isRequired,
-                  validate = required
-                )
-              )
+                source = field.name,
+                reference = reference,
+                isRequired = isRequired,
+                validate = required
+              )(SelectInput(optionText = source, isRequired = isRequired, validate = required))
           }
         }
         .getOrElse(Fragment())
     }
 
     Create(
-      Create.Props(
-        SimpleForm(
-          SimpleForm.Props(toolbar = Fragment(), children = inputs :+ SaveButton())
-        )
-      )
+      SimpleForm(Fragment())(inputs.appended(SaveButton()): _*)
     )
   }
 }
