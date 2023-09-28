@@ -7,10 +7,10 @@ import scala.scalajs.js
 import scala.scalajs.js.|
 
 object SimpleForm extends ExternalComponent {
-  case class Props(toolbar: ReactElement, children: Seq[ReactElement])
+  case class Props(toolbar: ReactElement)
 
-  def apply(toolbar: ReactElement)(children: ReactElement*): BuildingComponent[_, _] =
-    super.apply(Props(toolbar, children))
+  def apply(toolbar: ReactElement): BuildingComponent[_, _] =
+    super.apply(Props(toolbar))
 
   override val component: String | js.Object = ReactAdmin.SimpleForm
 }

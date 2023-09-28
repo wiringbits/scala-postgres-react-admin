@@ -30,19 +30,16 @@ object EditGuesser {
       if !field.isVisible then Fragment()
       else
         field.`type` match {
-          case ColumnType.Date => DateTimeInput(DateTimeInput.Props(source = field.name, disabled = field.disabled))
-          case ColumnType.Text => TextInput(TextInput.Props(source = field.name, disabled = field.disabled))
-          case ColumnType.Email => TextInput(TextInput.Props(source = field.name, disabled = field.disabled))
-          case ColumnType.Image => ImageField(ImageField.Props(source = field.name))
-          case ColumnType.Number => NumberInput(NumberInput.Props(source = field.name, disabled = field.disabled))
+          case ColumnType.Date => DateTimeInput(source = field.name, disabled = field.disabled)
+          case ColumnType.Text => TextInput(source = field.name, disabled = field.disabled)
+          case ColumnType.Email => TextInput(source = field.name, disabled = field.disabled)
+          case ColumnType.Image => ImageField(source = field.name)
+          case ColumnType.Number => NumberInput(source = field.name, disabled = field.disabled)
           case ColumnType.Reference(reference, source) =>
             ReferenceInput(
-              ReferenceInput.Props(
-                source = field.name,
-                reference = reference,
-                children = Seq(SelectInput(SelectInput.Props(optionText = source, disabled = field.disabled)))
-              )
-            )
+              source = field.name,
+              reference = reference
+            )(SelectInput(optionText = source, disabled = field.disabled))
         }
     }
 
@@ -65,29 +62,22 @@ object EditGuesser {
       tableAction
         .map { x =>
           x.actions.map { action =>
-            Button(Button.Props(onClick = () => onClick(action, ctx), children = Seq(action.text)))
+            Button(onClick = () => onClick(action, ctx))(action.text)
           }: Seq[ReactElement]
         }
         .getOrElse(Seq.empty)
     }
 
-    val actions = TopToolbar(TopToolbar.Props(children = buttons()))
+    val actions = TopToolbar(buttons())
 
     val deleteButton: ReactElement = if (props.response.canBeDeleted) DeleteButton() else Fragment()
     val toolbar: ReactElement = Toolbar(
-      Toolbar.Props(children =
-        Seq(
-          SaveButton(),
-          deleteButton
-        )
-      )
+      SaveButton(),
+      deleteButton
     )
 
-    Edit(
-      Edit.Props(
-        actions = actions(),
-        children = Seq(SimpleForm(SimpleForm.Props(toolbar = toolbar, children = inputs)))
-      )
+    Edit(actions)(
+      SimpleForm(toolbar)(inputs)
     )
   }
 }

@@ -43,18 +43,16 @@ object AdminView {
     def buildResources: Seq[ReactElement] = {
       tables.map { table =>
         Resource(
-          Resource.Props(
-            name = table.name,
-            list = ListGuesser(table),
-            edit = EditGuesser(table, props.dataExplorerSettings),
-            create = CreateGuesser(table)
-          )
+          name = table.name,
+          list = ListGuesser(table),
+          edit = EditGuesser(table, props.dataExplorerSettings),
+          create = CreateGuesser(table)
         ).withKey(table.name)
       }
     }
 
     div()(
-      Admin(Admin.Props(dataProvider = simpleRestProvider(tablesUrl), children = buildResources)),
+      Admin(simpleRestProvider(tablesUrl))(buildResources),
       error.map(h1(_))
     )
   }

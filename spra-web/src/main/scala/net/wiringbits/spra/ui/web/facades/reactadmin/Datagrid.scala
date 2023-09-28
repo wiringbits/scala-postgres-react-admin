@@ -7,10 +7,10 @@ import scala.scalajs.js
 import scala.scalajs.js.|
 
 object Datagrid extends ExternalComponent {
-  case class Props(rowClick: String, bulkActionButtons: Boolean, children: Seq[ReactElement])
+  case class Props(rowClick: String, bulkActionButtons: Boolean)
 
-  def apply(rowClick: String, bulkActionButtons: Boolean)(children: ReactElement*): BuildingComponent[_, _] =
-    super.apply(Props(rowClick, bulkActionButtons, children))
+  def apply(rowClick: String, bulkActionButtons: Boolean): BuildingComponent[_, _] =
+    super.apply(Props(rowClick, bulkActionButtons))
 
   override val component: String | js.Object = ReactAdmin.Datagrid
 }
