@@ -58,7 +58,7 @@ object ListGuesser {
     )
 
     ComponentList(listToolbar)(filterList: _*)(
-      Seq(Datagrid(rowClick = "edit", bulkActionButtons = props.response.canBeDeleted)(widgetFields))
+      Datagrid(rowClick = "edit", bulkActionButtons = props.response.canBeDeleted)(widgetFields)
     )
   }
 }
