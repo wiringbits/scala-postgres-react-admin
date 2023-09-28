@@ -3,6 +3,7 @@ package net.wiringbits.spra.api
 import play.api.libs.json.*
 
 import java.time.Instant
+import scala.language.implicitConversions
 
 package object models {
 
@@ -18,4 +19,15 @@ package object models {
 
   case class ErrorResponse(error: String)
   implicit val errorResponseFormat: Format[ErrorResponse] = Json.format[ErrorResponse]
+
+  implicit def optionFormat[T](using formatter: Format[T]): Format[Option[T]] = Format[Option[T]](
+    fjs = Reads[Option[T]](_.validateOpt[T]),
+    tjs = Writes[Option[T]] {
+      case Some(value) => Json.toJson(value)
+      case None => Json.toJson("")
+    }
+  )
+
+  def handleMapWithOptionalValue(map: Map[String, Option[String]]): Map[String, String] =
+    map.collect { case (key, Some(value)) => key -> value }
 }

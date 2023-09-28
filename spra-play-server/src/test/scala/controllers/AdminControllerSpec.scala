@@ -669,6 +669,18 @@ class AdminControllerSpec extends PlayPostgresSpec with AdminUtils {
       }
     }
 
+    "don't fail if we send a null in an optional parameter" in withApiClient { client =>
+      val json = """{"name":"wiringbits","email":null,"password":"wiringbits"}"""
+      val path = s"/admin/tables/${usersSettings.tableName}"
+      val response = POST(path, json).futureValue
+      response.header.status mustBe 200
+
+      val responseMetadata =
+        client.getTableMetadata(usersSettings.tableName, List("name", "ASC"), List(0, 9), "{}").futureValue
+
+      responseMetadata.head.nonEmpty mustBe true
+    }
+    
     "return new user id" in withApiClient { implicit client =>
       val user = createUser.futureValue
       val response = client.getTableMetadata(usersSettings.tableName, List("name", "ASC"), List(0, 9), "{}").futureValue
@@ -786,6 +798,27 @@ class AdminControllerSpec extends PlayPostgresSpec with AdminUtils {
         updateResponse.id must be(id)
         nameResponse must be(name)
       }
+    }
+
+    "don't fail if we send a null in an optional parameter" in withApiClient { client =>
+      val name = "wiringbits"
+      val email = "test@wiringbits.net"
+      val password = "wiringbits"
+      val request = AdminCreateTable.Request(Map("name" -> name, "email" -> email, "password" -> password))
+      client.createItem("users", request).futureValue
+      val responseMetadata1 =
+        client.getTableMetadata(usersSettings.tableName, List("name", "ASC"), List(0, 9), "{}").futureValue
+      val id = responseMetadata1.head("id")
+
+      val json = """{"email":null}"""
+      val path = s"/admin/tables/${usersSettings.tableName}/$id"
+      val response = PUT(path, json).futureValue
+      response.header.status mustBe 200
+
+      val responseMetadata2 =
+        client.getTableMetadata(usersSettings.tableName, List("name", "ASC"), List(0, 9), "{}").futureValue
+
+      responseMetadata2.head("email") mustBe ""
     }
 
     "fail if the field in body doesn't exists" in withApiClient { client =>
