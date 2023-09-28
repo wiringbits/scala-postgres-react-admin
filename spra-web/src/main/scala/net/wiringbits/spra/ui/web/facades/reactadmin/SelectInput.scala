@@ -7,18 +7,20 @@ import scala.scalajs.js.|
 
 object SelectInput extends ExternalComponent {
   case class Props(
-      optionText: String = "",
+      source: String = "",
       disabled: Boolean = false,
       isRequired: Boolean = false,
-      validate: js.UndefOr[js.Any] = js.undefined
+      validate: js.UndefOr[js.Any] = js.undefined,
+      optionText: js.UndefOr[String] = js.undefined
   )
 
   def apply(
-      optionText: String = "",
+      source: String = "",
       disabled: Boolean = false,
       isRequired: Boolean = false,
-      validate: js.UndefOr[js.Any] = js.undefined
-  ): BuildingComponent[_, _] = super.apply(Props(optionText, disabled, isRequired, validate))
+      validate: js.UndefOr[js.Any] = js.undefined,
+      optionText: js.UndefOr[String] = js.undefined
+  ): BuildingComponent[_, _] = super.apply(Props(source, disabled, isRequired, validate, optionText))
 
   override val component: String | js.Object = ReactAdmin.SelectInput
 }

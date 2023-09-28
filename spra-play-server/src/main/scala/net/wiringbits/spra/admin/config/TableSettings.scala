@@ -40,13 +40,14 @@ case class TableSettings(
     primaryKeyDataType: PrimaryKeyDataType = PrimaryKeyDataType.UUID,
     columnTypeOverrides: Map[String, CustomDataType] = Map.empty,
     filterableColumns: List[String] = List.empty,
-    createSettings: CreateSettings = CreateSettings()
+    createSettings: CreateSettings = CreateSettings(),
+    referenceDisplayField: Option[String] = None
 ) {
   override def toString: String =
     s"""TableSettings(tableName = $tableName, primaryKeyField = $primaryKeyField, referenceField = $referenceField,
        hiddenColumns = $hiddenColumns, nonEditableColumns = $nonEditableColumns, canBeDeleted = $canBeDeleted,
        primaryKeyDataType = $primaryKeyDataType, columnTypeOverrides = $columnTypeOverrides,
-       filterableColumns = $filterableColumns, createSettings = $createSettings)"""
+       filterableColumns = $filterableColumns, createSettings = $createSettings, referenceDisplayField: $referenceDisplayField)"""
 }
 
 object TableSettings {
@@ -102,7 +103,8 @@ object TableSettings {
       createSettings = CreateSettings(
         requiredColumns = getList[String]("createFilter.requiredColumns"),
         nonRequiredColumns = getList[String]("createFilter.nonRequiredColumns")
-      )
+      ),
+      referenceDisplayField = getOption[String]("referenceDisplayField")
     )
   }
 }

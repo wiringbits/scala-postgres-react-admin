@@ -39,7 +39,13 @@ object EditGuesser {
             ReferenceInput(
               source = field.name,
               reference = reference
-            )(SelectInput(optionText = source, disabled = field.disabled))
+            )(
+              SelectInput(
+                source = source,
+                optionText = props.response.referenceDisplayField.getOrElse(source),
+                disabled = !field.disabled
+              )
+            )
         }
     }
 
