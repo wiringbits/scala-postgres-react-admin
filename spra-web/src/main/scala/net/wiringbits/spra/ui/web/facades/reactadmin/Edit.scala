@@ -7,10 +7,10 @@ import scala.scalajs.js
 import scala.scalajs.js.|
 
 object Edit extends ExternalComponent {
-  case class Props(actions: ReactElement, children: Seq[ReactElement])
+  case class Props(actions: ReactElement)
 
-  def apply(actions: ReactElement)(children: ReactElement*): BuildingComponent[_, _] = {
-    super.apply(Props(actions, children))
+  def apply(actions: ReactElement): BuildingComponent[_, _] = {
+    super.apply(Props(actions))
   }
 
   override val component: String | js.Object = ReactAdmin.Edit
