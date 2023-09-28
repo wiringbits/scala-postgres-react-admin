@@ -43,7 +43,7 @@ object EditGuesser {
               SelectInput(
                 source = source,
                 optionText = props.response.referenceDisplayField.getOrElse(source),
-                disabled = !field.disabled
+                disabled = field.disabled
               )
             )
         }
