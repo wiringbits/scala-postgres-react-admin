@@ -38,7 +38,13 @@ object CreateGuesser {
                 reference = reference,
                 isRequired = isRequired,
                 validate = required
-              )(SelectInput(optionText = source, isRequired = isRequired, validate = required))
+              )(
+                SelectInput(
+                  optionText = props.response.referenceDisplayField.getOrElse(source),
+                  isRequired = isRequired,
+                  validate = required
+                )
+              )
           }
         }
         .getOrElse(Fragment())

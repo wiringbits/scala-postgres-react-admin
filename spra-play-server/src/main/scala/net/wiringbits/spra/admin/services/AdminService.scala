@@ -4,7 +4,7 @@ import net.wiringbits.spra.admin.config.{CustomDataType, DataExplorerConfig, Tab
 import net.wiringbits.spra.admin.repositories.DatabaseTablesRepository
 import net.wiringbits.spra.admin.repositories.models.{ForeignKey, TableData}
 import net.wiringbits.spra.admin.utils.models.QueryParameters
-import net.wiringbits.spra.admin.utils.{MapStringHideExt, contentRangeHeader}
+import net.wiringbits.spra.admin.utils.contentRangeHeader
 import net.wiringbits.spra.api.models.*
 
 import java.awt.image.BufferedImage
@@ -78,15 +78,12 @@ class AdminService @Inject() (
             name = settings.tableName,
             columns = columns,
             primaryKeyName = settings.primaryKeyField,
-            canBeDeleted = settings.canBeDeleted
+            canBeDeleted = settings.canBeDeleted,
+            referenceDisplayField = settings.referenceDisplayField
           )
         }
       }
     } yield AdminGetTables.Response(items)
-  }
-
-  private def hideData(tableData: TableData, hiddenColumns: List[String]) = {
-    tableData.data.hideData(hiddenColumns)
   }
 
   def tableMetadata(tableName: String, queryParams: QueryParameters): Future[(List[Map[String, String]], String)] = {
@@ -102,9 +99,8 @@ class AdminService @Inject() (
       _ <- validateQueryParameters(tableName, queryParams)
       tableRows <- databaseTablesRepository.getTableMetadata(settings, queryParams)
       numberOfRecords <- databaseTablesRepository.numberOfRecords(tableName)
-      hiddenTableData = tableRows.map(data => hideData(data, settings.hiddenColumns))
       contentRange = contentRangeHeader(tableName, queryParams, numberOfRecords)
-    } yield (hiddenTableData, contentRange)
+    } yield (tableRows.map(_.data), contentRange)
   }
 
   private def validateQueryParameters(tableName: String, params: QueryParameters): Future[Unit] = {
@@ -129,9 +125,7 @@ class AdminService @Inject() (
       _ <- validations
       maybe <- databaseTablesRepository.find(tableName, primaryKeyValue)
       tableRow = maybe.getOrElse(throw new RuntimeException(s"Cannot find item in $tableName with id $primaryKeyValue"))
-      settings = dataExplorerConfig.unsafeFindByName(tableName)
-      hiddenData = hideData(tableRow, settings.hiddenColumns)
-    } yield hiddenData
+    } yield tableRow.data
   }
 
   def find(tableName: String, primaryKeyValues: List[String]): Future[List[Map[String, String]]] = {
@@ -141,7 +135,6 @@ class AdminService @Inject() (
 
     for {
       _ <- validations
-      settings = dataExplorerConfig.unsafeFindByName(tableName)
       tableRows <- Future.sequence {
         primaryKeyValues.map { primaryKeyValue =>
           for {
@@ -152,8 +145,7 @@ class AdminService @Inject() (
           } yield tableData
         }
       }
-      maskedTableData = tableRows.map(x => hideData(x, settings.hiddenColumns))
-    } yield maskedTableData
+    } yield tableRows.map(_.data)
   }
 
   def create(tableName: String, request: AdminCreateTable.Request): Future[String] = {

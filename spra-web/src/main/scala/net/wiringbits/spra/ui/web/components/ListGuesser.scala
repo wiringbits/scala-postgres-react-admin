@@ -35,7 +35,9 @@ object ListGuesser {
           case Image => ImageField(source = field.name, sx = styles)
           case Number => NumberField(source = field.name)
           case ColumnType.Reference(reference, source) =>
-            defaultField(reference, field.name)(TextField(source = source))
+            defaultField(reference, field.name)(
+              TextField(source = props.response.referenceDisplayField.getOrElse(source))
+            )
         }
       }
     }

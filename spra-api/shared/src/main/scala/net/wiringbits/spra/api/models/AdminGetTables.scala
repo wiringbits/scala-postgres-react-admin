@@ -5,7 +5,13 @@ import play.api.libs.json.{Format, Json}
 object AdminGetTables {
   case class Response(data: List[Response.DatabaseTable])
   object Response {
-    case class DatabaseTable(name: String, columns: List[TableColumn], primaryKeyName: String, canBeDeleted: Boolean)
+    case class DatabaseTable(
+        name: String,
+        columns: List[TableColumn],
+        primaryKeyName: String,
+        canBeDeleted: Boolean,
+        referenceDisplayField: Option[String]
+    )
     case class TableColumn(
         name: String,
         `type`: String,
