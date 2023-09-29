@@ -1,6 +1,7 @@
 package net.wiringbits.spra.admin.config
 
 import com.typesafe.config.Config
+import net.wiringbits.spra.api.models.AdminGetTables.Response.ManyToOneReference
 import play.api.ConfigLoader
 
 import scala.util.Try
@@ -41,13 +42,15 @@ case class TableSettings(
     columnTypeOverrides: Map[String, CustomDataType] = Map.empty,
     filterableColumns: List[String] = List.empty,
     createSettings: CreateSettings = CreateSettings(),
-    referenceDisplayField: Option[String] = None
+    referenceDisplayField: Option[String] = None,
+    manyToOneReferences: List[ManyToOneReference] = List.empty
 ) {
   override def toString: String =
     s"""TableSettings(tableName = $tableName, primaryKeyField = $primaryKeyField, referenceField = $referenceField,
        hiddenColumns = $hiddenColumns, nonEditableColumns = $nonEditableColumns, canBeDeleted = $canBeDeleted,
        primaryKeyDataType = $primaryKeyDataType, columnTypeOverrides = $columnTypeOverrides,
-       filterableColumns = $filterableColumns, createSettings = $createSettings, referenceDisplayField: $referenceDisplayField)"""
+       filterableColumns = $filterableColumns, createSettings = $createSettings, referenceDisplayField: $referenceDisplayField,
+       manyToOneReferences: $manyToOneReferences)"""
 }
 
 object TableSettings {
@@ -85,6 +88,22 @@ object TableSettings {
       ).getOrElse(Map.empty)
     }
 
+    def handleManyToOneReferences: List[ManyToOneReference] = Try(
+      newConfig
+        .getConfig("manyToOneReferences")
+        .resolve()
+        .entrySet()
+        .asScala
+        .map { entry =>
+          entry.getKey.split('.').toList match
+            case tableName :: _ =>
+              val source = newConfig.getConfig(s"manyToOneReferences.$tableName").getString("source")
+              ManyToOneReference(tableName, source)
+            case _ => throw new RuntimeException(s"Invalid manyToOneReferences")
+        }
+        .toList
+    ).getOrElse(List.empty)
+
     TableSettings(
       tableName = get[String]("tableName"),
       primaryKeyField = get[String]("primaryKeyField"),
@@ -104,7 +123,8 @@ object TableSettings {
         requiredColumns = getList[String]("createFilter.requiredColumns"),
         nonRequiredColumns = getList[String]("createFilter.nonRequiredColumns")
       ),
-      referenceDisplayField = getOption[String]("referenceDisplayField")
+      referenceDisplayField = getOption[String]("referenceDisplayField"),
+      manyToOneReferences = handleManyToOneReferences
     )
   }
 }

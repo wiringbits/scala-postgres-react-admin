@@ -3,11 +3,10 @@ package net.wiringbits.spra.admin.repositories.daos
 import anorm.{SqlParser, SqlStringInterpolation}
 import net.wiringbits.spra.admin.config.{CustomDataType, PrimaryKeyDataType, TableSettings}
 import net.wiringbits.spra.admin.repositories.models.*
+import net.wiringbits.spra.admin.utils.QueryBuilder
 import net.wiringbits.spra.admin.utils.models.{FilterParameter, QueryParameters}
-import net.wiringbits.spra.admin.utils.{QueryBuilder, StringRegex}
 
-import java.sql.{Connection, Date, PreparedStatement, ResultSet}
-import java.time.LocalDate
+import java.sql.{Connection, PreparedStatement, ResultSet}
 import java.util.UUID
 import scala.collection.mutable.ListBuffer
 import scala.util.Try
@@ -77,37 +76,17 @@ object DatabaseTablesDAO {
       settings: TableSettings,
       columns: List[TableColumn],
       queryParameters: QueryParameters,
-      baseUrl: String
+      baseUrl: String,
+      fieldsAndValues: Map[TableColumn, String]
   )(implicit conn: Connection): List[TableRow] = {
-    val dateRegex = StringRegex.dateRegex
-    val limit = queryParameters.pagination.end - queryParameters.pagination.start
-    val offset = queryParameters.pagination.start
     val tableName = settings.tableName
-    // react-admin gives us a "id" field instead of the primary key of the actual column so we need to replace it
-    val sortBy = if (queryParameters.sort.field == "id") settings.primaryKeyField else queryParameters.sort.field
 
-    val conditionsSql = queryParameters.filters
-      .map { case FilterParameter(filterField, filterValue) =>
-        filterValue match {
-          case dateRegex(_, _, _) =>
-            s"DATE($filterField) = ?"
-
-          case _ =>
-            if (filterValue.toIntOption.isDefined || filterValue.toDoubleOption.isDefined)
-              s"$filterField = ?"
-            else
-              s"$filterField LIKE ?"
-        }
-      }
-      .mkString("WHERE ", " AND ", " ")
-
-    val sql =
-      s"""
-      SELECT * FROM $tableName
-      ${if (queryParameters.filters.nonEmpty) conditionsSql else ""}
-      ORDER BY $sortBy ${queryParameters.sort.ordering}
-      LIMIT $limit OFFSET $offset
-      """
+    val sql = QueryBuilder.get(
+      tableName,
+      fieldsAndValues = fieldsAndValues,
+      queryParameters = queryParameters,
+      primaryKeyField = settings.primaryKeyField
+    )
     val preparedStatement = conn.prepareStatement(sql)
 
     queryParameters.filters.zipWithIndex
@@ -115,19 +94,7 @@ object DatabaseTablesDAO {
         // We have to increment index by 1 because SQL parameterIndex starts in 1
         val sqlIndex = index + 1
 
-        filterValue match {
-          case dateRegex(year, month, day) =>
-            val parsedDate = LocalDate.of(year.toInt, month.toInt, day.toInt)
-            preparedStatement.setDate(sqlIndex, Date.valueOf(parsedDate))
-
-          case _ =>
-            if (filterValue.toIntOption.isDefined)
-              preparedStatement.setInt(sqlIndex, filterValue.toInt)
-            else if (filterValue.toDoubleOption.isDefined)
-              preparedStatement.setDouble(sqlIndex, filterValue.toDouble)
-            else
-              preparedStatement.setString(sqlIndex, s"%$filterValue%")
-        }
+        preparedStatement.setObject(sqlIndex, filterValue)
       }
 
     val resultSet = preparedStatement.executeQuery()

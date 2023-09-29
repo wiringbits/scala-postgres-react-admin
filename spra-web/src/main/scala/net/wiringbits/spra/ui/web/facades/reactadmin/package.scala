@@ -14,7 +14,7 @@ package object reactadmin {
     val Admin, Resource, EditGuesser, ListGuesser, TextInput, ImageField, NumberInput, DateTimeInput, ReferenceInput,
         SelectInput, Button, DeleteButton, SaveButton, TopToolbar, Toolbar, Edit, SimpleForm, DateField, TextField,
         EmailField, NumberField, ReferenceField, DateInput, FilterButton, ExportButton, List, Datagrid, Create,
-        CreateButton: js.Object =
+        CreateButton, ReferenceManyField: js.Object =
       js.native
   }
 }
