@@ -13,11 +13,8 @@ object QueryBuilder {
       queryParameters: QueryParameters,
       primaryKeyField: String
   ): String = {
-    val sqlValues = new mutable.StringBuilder()
-
     val filters = for {
       (tableColumn, _) <- fieldsAndValues
-      _ = sqlValues.append(s"${tableColumn.name} = ?::${tableColumn.`type`} AND ")
     } yield
     // It is ideal to convert timestamptz to date when comparing dates to avoid the time
     if tableColumn.`type` == "timestamptz" then s"${tableColumn.name}::date = ?::date"
