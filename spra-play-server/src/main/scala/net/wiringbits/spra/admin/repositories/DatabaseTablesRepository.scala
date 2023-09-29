@@ -4,7 +4,7 @@ import net.wiringbits.spra.admin.config.{DataExplorerConfig, TableSettings}
 import net.wiringbits.spra.admin.executors.DatabaseExecutionContext
 import net.wiringbits.spra.admin.repositories.daos.DatabaseTablesDAO
 import net.wiringbits.spra.admin.repositories.models.{DatabaseTable, ForeignKey, TableColumn, TableData}
-import net.wiringbits.spra.admin.utils.models.QueryParameters
+import net.wiringbits.spra.admin.utils.models.{FilterParameter, QueryParameters}
 import play.api.db.Database
 
 import javax.inject.Inject
@@ -42,7 +42,18 @@ class DatabaseTablesRepository @Inject() (database: Database)(implicit
   def getTableMetadata(settings: TableSettings, queryParameters: QueryParameters): Future[List[TableData]] = Future {
     database.withTransaction { implicit conn =>
       val columns = DatabaseTablesDAO.getTableColumns(settings.tableName)
-      val rows = DatabaseTablesDAO.getTableData(settings, columns, queryParameters, dataExplorerConfig.baseUrl)
+      val fieldsAndValues = queryParameters.filters.map { case FilterParameter(field, value) =>
+        val tableColumn =
+          columns.find(_.name == field).getOrElse(throw new RuntimeException(s"Invalid property in filters: $field"))
+        (tableColumn, value)
+      }.toMap
+      val rows = DatabaseTablesDAO.getTableData(
+        settings = settings,
+        columns = columns,
+        queryParameters = queryParameters,
+        baseUrl = dataExplorerConfig.baseUrl,
+        fieldsAndValues = fieldsAndValues
+      )
       val columnNames = getColumnNames(columns, settings.primaryKeyField)
       rows.map { row =>
         val tableRow = row.convertToMap(columnNames)

@@ -2,10 +2,38 @@ package net.wiringbits.spra.admin.utils
 
 import net.wiringbits.spra.admin.config.PrimaryKeyDataType
 import net.wiringbits.spra.admin.repositories.models.TableColumn
+import net.wiringbits.spra.admin.utils.models.QueryParameters
 
 import scala.collection.mutable
 
 object QueryBuilder {
+  def get(
+      tableName: String,
+      fieldsAndValues: Map[TableColumn, String],
+      queryParameters: QueryParameters,
+      primaryKeyField: String
+  ): String = {
+    val filters = for {
+      (tableColumn, _) <- fieldsAndValues
+    } yield
+    // It is ideal to convert timestamptz to date when comparing dates to avoid the time
+    if tableColumn.`type` == "timestamptz" then s"${tableColumn.name}::date = ?::date"
+    else s"${tableColumn.name} = ?::${tableColumn.`type`}"
+
+    // react-admin gives us a "id" field instead of the primary key of the actual column so we need to replace it
+    val sortBy = if (queryParameters.sort.field == "id") primaryKeyField else queryParameters.sort.field
+    val limit = queryParameters.pagination.end - queryParameters.pagination.start
+    val offset = queryParameters.pagination.start
+
+    s"""
+      |SELECT *
+      |FROM $tableName
+      |${if filters.nonEmpty then filters.mkString("WHERE ", " AND ", " ") else ""}
+      |ORDER BY $sortBy ${queryParameters.sort.ordering}
+      |LIMIT $limit OFFSET $offset
+      |""".stripMargin
+  }
+
   def create(
       tableName: String,
       fieldsAndValues: Map[TableColumn, String],

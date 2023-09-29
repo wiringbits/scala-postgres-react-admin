@@ -79,7 +79,8 @@ class AdminService @Inject() (
             columns = columns,
             primaryKeyName = settings.primaryKeyField,
             canBeDeleted = settings.canBeDeleted,
-            referenceDisplayField = settings.referenceDisplayField
+            referenceDisplayField = settings.referenceDisplayField,
+            manyToOneReferences = settings.manyToOneReferences
           )
         }
       }

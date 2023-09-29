@@ -1,6 +1,7 @@
 package net.wiringbits.spra.ui.web.components
 
 import net.wiringbits.spra.api.models.AdminGetTables
+import net.wiringbits.spra.api.models.AdminGetTables.Response.ManyToOneReference
 import net.wiringbits.spra.ui.web.facades.reactadmin.*
 import net.wiringbits.spra.ui.web.facades.reactadmin.ReactAdmin.useEditContext
 import net.wiringbits.spra.ui.web.models.{ButtonAction, ColumnType, DataExplorerSettings}
@@ -8,8 +9,9 @@ import net.wiringbits.spra.ui.web.utils.ResponseGuesser
 import org.scalajs.dom
 import org.scalajs.macrotaskexecutor.MacrotaskExecutor.Implicits.global
 import slinky.core.facade.{Fragment, ReactElement}
-import slinky.core.{FunctionalComponent, KeyAddingStage}
+import slinky.core.{BuildingComponent, FunctionalComponent, KeyAddingStage}
 
+import scala.collection.immutable
 import scala.scalajs.js
 import scala.util.{Failure, Success}
 
@@ -49,6 +51,15 @@ object EditGuesser {
         }
     }
 
+    val manyToOneReferences: Seq[ReactElement] = props.response.manyToOneReferences.map {
+      case ManyToOneReference(tableName, source, label) =>
+        ReferenceManyField(target = props.response.primaryKeyName, reference = tableName)(
+          Datagrid(rowClick = "edit", bulkActionButtons = false)(
+            TextField(source = source, label = label)
+          )
+        ).withKey(tableName)
+    }
+
     def onClick(action: ButtonAction, ctx: js.Dictionary[js.Any]): Unit = {
       val primaryKey = dom.window.location.hash.split("/").lastOption.getOrElse("")
       action.onClick(primaryKey).onComplete {
@@ -84,6 +95,6 @@ object EditGuesser {
 
     Edit(actions)(
       SimpleForm(toolbar)(inputs)
-    )
+    )(manyToOneReferences: _*)
   }
 }
