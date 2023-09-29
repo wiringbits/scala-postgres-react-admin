@@ -23,7 +23,7 @@ object AdminGetTables {
         isRequiredOnCreate: Option[Boolean]
     )
     case class TableReference(referencedTable: String, referenceField: String)
-    case class ManyToOneReference(tableName: String, source: String)
+    case class ManyToOneReference(tableName: String, source: String, label: String)
 
     implicit val adminTableReferenceResponseFormat: Format[TableReference] = Json.format[TableReference]
     implicit val adminTableColumnResponseFormat: Format[TableColumn] = Json.format[TableColumn]

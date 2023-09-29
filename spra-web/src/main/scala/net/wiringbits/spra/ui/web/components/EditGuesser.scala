@@ -52,10 +52,10 @@ object EditGuesser {
     }
 
     val manyToOneReferences: Seq[ReactElement] = props.response.manyToOneReferences.map {
-      case ManyToOneReference(tableName, source) =>
+      case ManyToOneReference(tableName, source, label) =>
         ReferenceManyField(target = props.response.primaryKeyName, reference = tableName)(
           Datagrid(rowClick = "edit", bulkActionButtons = false)(
-            TextField(source = source)
+            TextField(source = source, label = label)
           )
         ).withKey(tableName)
     }

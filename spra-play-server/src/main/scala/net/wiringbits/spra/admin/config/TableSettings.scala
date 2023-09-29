@@ -98,7 +98,8 @@ object TableSettings {
           entry.getKey.split('.').toList match
             case tableName :: _ =>
               val source = newConfig.getConfig(s"manyToOneReferences.$tableName").getString("source")
-              ManyToOneReference(tableName, source)
+              val label = newConfig.getConfig(s"manyToOneReferences.$tableName").getString("label")
+              ManyToOneReference(tableName, source, label)
             case _ => throw new RuntimeException(s"Invalid manyToOneReferences")
         }
         .toList
