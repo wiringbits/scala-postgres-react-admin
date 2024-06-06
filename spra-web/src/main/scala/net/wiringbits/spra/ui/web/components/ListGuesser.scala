@@ -54,7 +54,7 @@ object ListGuesser {
             reference = reference
           )(
             SelectInput(
-              optionText = props.response.referenceDisplayField.getOrElse(source),
+              optionText = props.response.referenceDisplayField.getOrElse(source)
             )
           )
       }
