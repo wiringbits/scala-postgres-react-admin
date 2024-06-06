@@ -49,7 +49,14 @@ object ListGuesser {
         case ColumnType.Image => Fragment()
         case ColumnType.Number => NumberInput(source = field.name)
         case ColumnType.Reference(reference, source) =>
-          defaultField(reference, field.name)(TextField(source = source))
+          ReferenceInput(
+            source = field.name,
+            reference = reference
+          )(
+            SelectInput(
+              optionText = props.response.referenceDisplayField.getOrElse(source),
+            )
+          )
       }
     }
 
