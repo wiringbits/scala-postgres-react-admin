@@ -93,10 +93,7 @@ object DatabaseTablesDAO {
             s"DATE($filterField) = ?"
 
           case _ =>
-            if (filterValue.toIntOption.isDefined || filterValue.toDoubleOption.isDefined)
-              s"$filterField = ?"
-            else
-              s"CAST($filterField AS TEXT) LIKE ?"
+            s"CAST($filterField AS TEXT) LIKE ?"
         }
       }
       .mkString("WHERE ", " AND ", " ")
@@ -121,12 +118,7 @@ object DatabaseTablesDAO {
             preparedStatement.setDate(sqlIndex, Date.valueOf(parsedDate))
 
           case _ =>
-            if (filterValue.toIntOption.isDefined)
-              preparedStatement.setInt(sqlIndex, filterValue.toInt)
-            else if (filterValue.toDoubleOption.isDefined)
-              preparedStatement.setDouble(sqlIndex, filterValue.toDouble)
-            else
-              preparedStatement.setString(sqlIndex, s"%$filterValue%")
+            preparedStatement.setString(sqlIndex, s"%$filterValue%")
         }
       }
 
