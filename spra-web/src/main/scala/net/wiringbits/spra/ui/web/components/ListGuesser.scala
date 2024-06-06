@@ -20,7 +20,7 @@ object ListGuesser {
   val component: FunctionalComponent[Props] = FunctionalComponent[Props] { props =>
     val fields = ResponseGuesser.getTypesFromResponse(props.response)
 
-    def defaultField(reference: String, source: String)(children: ReactElement*): ReactElement =
+    def defaultField(reference: String, source: String)(children: ReactElement): ReactElement =
       ReferenceField(reference = reference, source = source)(children)
 
     val widgetFields: Seq[ReactElement] = fields.map { field =>
