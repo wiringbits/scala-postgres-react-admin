@@ -32,7 +32,7 @@ val sttp = "3.5.0"
 val anorm = "2.7.0"
 val scalaTestPlusPlay = "6.0.0-M6"
 val scalaTestPlusMockito = "3.2.15.0"
-val reactAdmin = "4.14.3"
+val reactAdmin = "4.14.4"
 
 val consoleDisabledOptions = Seq("-Xfatal-warnings", "-Ywarn-unused", "-Ywarn-unused-import")
 
