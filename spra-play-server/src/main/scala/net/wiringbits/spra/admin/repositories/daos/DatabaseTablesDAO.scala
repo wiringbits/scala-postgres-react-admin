@@ -96,7 +96,7 @@ object DatabaseTablesDAO {
             if (filterValue.toIntOption.isDefined || filterValue.toDoubleOption.isDefined)
               s"$filterField = ?"
             else
-              s"$filterField LIKE ?"
+              s"CAST($filterField AS TEXT) LIKE ?"
         }
       }
       .mkString("WHERE ", " AND ", " ")
