@@ -149,7 +149,7 @@ object DatabaseTablesDAO {
             else if (filterValue.toDoubleOption.isDefined && isDouble(columnType))
               preparedStatement.setDouble(sqlIndex, filterValue.toDouble)
             else if (isUUID(filterValue) && columnType == "uuid")
-              preparedStatement.setObject(1, UUID.fromString(filterValue))
+              preparedStatement.setObject(sqlIndex, UUID.fromString(filterValue))
             else
               preparedStatement.setString(sqlIndex, s"%$filterValue%")
         }
