@@ -73,6 +73,23 @@ object DatabaseTablesDAO {
     """.as(foreignKeyParser.*)
   }
 
+  private def isDouble(columnType: String): Boolean = {
+    columnType.contains("int") || columnType.contains("float") || columnType.contains("decimal")
+  }
+  private def isInt(columnType: String): Boolean = {
+    columnType.contains("int") || columnType == "serial"
+  }
+  private def isUUID(value: String): Boolean = {
+    try {
+      UUID.fromString(value)
+      true
+    } catch {
+      case _: IllegalArgumentException => false
+    }
+  }
+  private def isText(columnType: String): Boolean = {
+    columnType == "text" || columnType == "citext" || columnType == "varchar" || columnType == "char"
+  }
   def getTableData(
       settings: TableSettings,
       columns: List[TableColumn],
@@ -88,12 +105,21 @@ object DatabaseTablesDAO {
 
     val conditionsSql = queryParameters.filters
       .map { case FilterParameter(filterField, filterValue) =>
+        val columnType = columns.find(_.name.equals(filterField)).getOrElse(TableColumn("", "text")).`type`
         filterValue match {
-          case dateRegex(_, _, _) =>
+          case dateRegex(_, _, _) if columnType == "date" =>
             s"DATE($filterField) = ?"
-
           case _ =>
-            s"CAST($filterField AS TEXT) LIKE ?"
+            if (
+              (filterValue.toIntOption.isDefined && isInt(columnType)) ||
+              (filterValue.toDoubleOption.isDefined && isDouble(columnType)) ||
+              (isUUID(filterValue) && columnType == "uuid")
+            )
+              s"$filterField = ?"
+            else if (isText(columnType))
+              s"$filterField LIKE ?"
+            else
+              s"CAST($filterField AS TEXT) LIKE ?"
         }
       }
       .mkString("WHERE ", " AND ", " ")
@@ -108,17 +134,24 @@ object DatabaseTablesDAO {
     val preparedStatement = conn.prepareStatement(sql)
 
     queryParameters.filters.zipWithIndex
-      .foreach { case (FilterParameter(_, filterValue), index) =>
+      .foreach { case (FilterParameter(filterField, filterValue), index) =>
         // We have to increment index by 1 because SQL parameterIndex starts in 1
         val sqlIndex = index + 1
-
+        val columnType = columns.find(_.name.equals(filterField)).getOrElse(TableColumn(filterField, "text")).`type`
         filterValue match {
-          case dateRegex(year, month, day) =>
+          case dateRegex(year, month, day) if columnType == "date" =>
             val parsedDate = LocalDate.of(year.toInt, month.toInt, day.toInt)
             preparedStatement.setDate(sqlIndex, Date.valueOf(parsedDate))
 
           case _ =>
-            preparedStatement.setString(sqlIndex, s"%$filterValue%")
+            if (filterValue.toIntOption.isDefined && isInt(columnType))
+              preparedStatement.setInt(sqlIndex, filterValue.toInt)
+            else if (filterValue.toDoubleOption.isDefined && isDouble(columnType))
+              preparedStatement.setDouble(sqlIndex, filterValue.toDouble)
+            else if (isUUID(filterValue) && columnType == "uuid")
+              preparedStatement.setObject(1, UUID.fromString(filterValue))
+            else
+              preparedStatement.setString(sqlIndex, s"%$filterValue%")
         }
       }
 
