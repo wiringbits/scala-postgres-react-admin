@@ -11,10 +11,10 @@ package object reactadmin {
 
     def required(): js.Any = js.native
 
-    val Admin, Resource, EditGuesser, ListGuesser, TextInput, ImageField, NumberInput, DateTimeInput, ReferenceInput,
-        SelectInput, Button, DeleteButton, SaveButton, TopToolbar, Toolbar, Edit, SimpleForm, DateField, TextField,
-        EmailField, NumberField, ReferenceField, DateInput, FilterButton, ExportButton, List, Datagrid, Create,
-        CreateButton: js.Object =
+    val Admin, Resource, EditGuesser, ListGuesser, TextInput, ImageField, ImageInput, NumberInput, DateTimeInput,
+        ReferenceInput, SelectInput, Button, DeleteButton, SaveButton, TopToolbar, Toolbar, Edit, SimpleForm, DateField,
+        TextField, EmailField, NumberField, ReferenceField, DateInput, FilterButton, ExportButton, List, Datagrid,
+        Create, CreateButton: js.Object =
       js.native
   }
 }

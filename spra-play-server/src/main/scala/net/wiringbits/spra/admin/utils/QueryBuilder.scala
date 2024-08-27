@@ -8,7 +8,7 @@ import scala.collection.mutable
 object QueryBuilder {
   def create(
       tableName: String,
-      fieldsAndValues: Map[TableColumn, String],
+      fieldsAndValues: Map[TableColumn, Serializable],
       primaryKeyField: String,
       primaryKeyType: PrimaryKeyDataType = PrimaryKeyDataType.UUID
   ): String = {
@@ -33,7 +33,7 @@ object QueryBuilder {
       |""".stripMargin
   }
 
-  def update(tableName: String, body: Map[TableColumn, String], primaryKeyField: String): String = {
+  def update(tableName: String, body: Map[TableColumn, Serializable], primaryKeyField: String): String = {
     val updateStatement = new mutable.StringBuilder("SET")
     for ((tableField, value) <- body) {
       val resultStatement = if (value == "null") "NULL" else s"?::${tableField.`type`}"

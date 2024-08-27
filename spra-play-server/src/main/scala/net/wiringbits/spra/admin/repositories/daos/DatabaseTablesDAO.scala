@@ -255,7 +255,7 @@ object DatabaseTablesDAO {
   }
   def create(
       tableName: String,
-      fieldsAndValues: Map[TableColumn, String],
+      fieldsAndValues: Map[TableColumn, Serializable],
       primaryKeyField: String,
       primaryKeyType: PrimaryKeyDataType = PrimaryKeyDataType.UUID
   )(implicit
@@ -285,7 +285,7 @@ object DatabaseTablesDAO {
 
   def update(
       tableName: String,
-      fieldsAndValues: Map[TableColumn, String],
+      fieldsAndValues: Map[TableColumn, Serializable],
       primaryKeyField: String,
       primaryKeyValue: String,
       primaryKeyType: PrimaryKeyDataType = PrimaryKeyDataType.UUID

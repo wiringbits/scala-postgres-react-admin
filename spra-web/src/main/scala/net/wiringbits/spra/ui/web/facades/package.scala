@@ -1,10 +1,28 @@
 package net.wiringbits.spra.ui.web
 
 import scala.scalajs.js
-import scala.scalajs.js.annotation.JSImport
 
 package object facades {
-  @js.native
-  @JSImport("ra-data-simple-rest", JSImport.Default)
-  def simpleRestProvider(url: String): DataProvider = js.native
+
+  def createDataProvider(url: String): DataProvider = {
+
+    val baseDataProvider = simpleRestProvider(url)
+
+    val dataProvider = WithLifecycleCallbacks(
+      baseDataProvider,
+      js.Array(
+        js.Dynamic.literal(
+          resource = "images",
+          afterRead = (record: js.Dynamic, dataProvider: js.Any) => {
+            processResponse(record)
+          },
+          beforeSave = (data: js.Dynamic, dataProvider: js.Any) => {
+            prepareRequest(data)
+          }
+        )
+      )
+    )
+
+    dataProvider
+  }
 }

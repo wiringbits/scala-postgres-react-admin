@@ -33,7 +33,7 @@ object EditGuesser {
           case ColumnType.Date => DateTimeInput(source = field.name, disabled = field.disabled)
           case ColumnType.Text => TextInput(source = field.name, disabled = field.disabled)
           case ColumnType.Email => TextInput(source = field.name, disabled = field.disabled)
-          case ColumnType.Image => ImageField(source = field.name)
+          case ColumnType.Image => ImageInput(source = field.name)(ImageField(source = "src"))
           case ColumnType.Number => NumberInput(source = field.name, disabled = field.disabled)
           case ColumnType.Reference(reference, source) =>
             ReferenceInput(
