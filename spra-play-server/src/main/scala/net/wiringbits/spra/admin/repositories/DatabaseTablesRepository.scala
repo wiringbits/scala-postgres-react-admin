@@ -2,6 +2,7 @@ package net.wiringbits.spra.admin.repositories
 
 import net.wiringbits.spra.admin.config.{DataExplorerConfig, TableSettings}
 import net.wiringbits.spra.admin.executors.DatabaseExecutionContext
+import net.wiringbits.spra.admin.models.{ByteArrayValue, StringValue}
 import net.wiringbits.spra.admin.repositories.daos.DatabaseTablesDAO
 import net.wiringbits.spra.admin.repositories.models.{DatabaseTable, ForeignKey, TableColumn, TableData}
 import net.wiringbits.spra.admin.utils.StringParse
@@ -76,10 +77,10 @@ class DatabaseTablesRepository @Inject() (database: Database)(implicit
       val fieldsAndValues = body.map { case (key, value) =>
         val field =
           columns.find(_.name == key).getOrElse(throw new RuntimeException(s"Invalid property in body request: $key"))
-        if (field.`type`.equals("bytea"))
-          (field, StringParse.stringToByteArray(value))
-        else
-          (field, value)
+        if (field.`type` == "bytea")
+          val byteaValue = StringParse.stringToByteArray(value)
+          (field, ByteArrayValue(byteaValue))
+        else (field, StringValue(value))
       }
       DatabaseTablesDAO.create(
         tableName = tableName,
@@ -104,10 +105,10 @@ class DatabaseTablesRepository @Inject() (database: Database)(implicit
         val fieldsAndValues = bodyWithoutNonEditableColumns.map { case (key, value) =>
           val field =
             columns.find(_.name == key).getOrElse(throw new RuntimeException(s"Invalid property in body request: $key"))
-          if (field.`type`.equals("bytea"))
-            (field, StringParse.stringToByteArray(value))
-          else
-            (field, value)
+          if (field.`type` == "bytea")
+            val byteaValue = StringParse.stringToByteArray(value)
+            (field, ByteArrayValue(byteaValue))
+          else (field, StringValue(value))
         }
         val primaryKeyType = settings.primaryKeyDataType
         DatabaseTablesDAO.update(

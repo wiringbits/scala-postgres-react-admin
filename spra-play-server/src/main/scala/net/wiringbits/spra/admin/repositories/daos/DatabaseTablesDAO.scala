@@ -2,6 +2,7 @@ package net.wiringbits.spra.admin.repositories.daos
 
 import anorm.{SqlParser, SqlStringInterpolation}
 import net.wiringbits.spra.admin.config.{CustomDataType, PrimaryKeyDataType, TableSettings}
+import net.wiringbits.spra.admin.models.{ByteArrayValue, FieldValue, StringValue}
 import net.wiringbits.spra.admin.repositories.models.*
 import net.wiringbits.spra.admin.utils.models.{FilterParameter, QueryParameters}
 import net.wiringbits.spra.admin.utils.{QueryBuilder, StringRegex}
@@ -10,7 +11,7 @@ import java.sql.{Connection, Date, PreparedStatement, ResultSet}
 import java.time.LocalDate
 import java.util.UUID
 import scala.collection.mutable.ListBuffer
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 object DatabaseTablesDAO {
 
@@ -73,23 +74,38 @@ object DatabaseTablesDAO {
     """.as(foreignKeyParser.*)
   }
 
-  private def isDouble(columnType: String): Boolean = {
-    columnType.contains("int") || columnType.contains("float") || columnType.contains("decimal")
+  private def columnTypeIsDouble(columnType: String): Boolean = {
+    // 'contains' is used because PostgreSQL types may include additional details like precision or scale
+    // https://www.postgresql.org/docs/8.1/datatype.html
+    List("float", "decimal").exists(columnType.contains)
   }
-  private def isInt(columnType: String): Boolean = {
-    columnType.contains("int") || columnType == "serial"
+
+  private def columnTypeIsInt(columnType: String): Boolean = {
+    List("int", "serial").exists(columnType.contains)
   }
-  private def isUUID(value: String): Boolean = {
-    try {
-      UUID.fromString(value)
-      true
-    } catch {
-      case _: IllegalArgumentException => false
+
+  private def isUUID(value: String, columnType: String): Boolean = {
+    val isUUID = Try(UUID.fromString(value)) match {
+      case Success(_) => true
+      case Failure(_) => false
     }
+    isUUID && columnType == "uuid"
   }
-  private def isText(columnType: String): Boolean = {
-    columnType == "text" || columnType == "citext" || columnType == "varchar" || columnType == "char"
+
+  private def isInt(value: String, columnType: String): Boolean = {
+    value.toIntOption.isDefined && columnTypeIsInt(columnType)
   }
+
+  private def isDecimal(value: String, columnType: String): Boolean = {
+    value.toDoubleOption.isDefined && columnTypeIsDouble(columnType)
+  }
+
+  private def isANumberOrUUID(value: String, columnType: String): Boolean = {
+    isInt(value, columnType) ||
+    isDecimal(value, columnType) ||
+    isUUID(value, columnType)
+  }
+
   def getTableData(
       settings: TableSettings,
       columns: List[TableColumn],
@@ -105,21 +121,18 @@ object DatabaseTablesDAO {
 
     val conditionsSql = queryParameters.filters
       .map { case FilterParameter(filterField, filterValue) =>
-        val columnType = columns.find(_.name.equals(filterField)).getOrElse(TableColumn("", "text")).`type`
+        val columnType = columns.find(_.name == filterField) match {
+          case Some(column) => column.`type`
+          case None => throw Exception(s"Column with name '$filterField' not found.")
+        }
         filterValue match {
           case dateRegex(_, _, _) if columnType == "date" =>
             s"DATE($filterField) = ?"
           case _ =>
-            if (
-              (filterValue.toIntOption.isDefined && isInt(columnType)) ||
-              (filterValue.toDoubleOption.isDefined && isDouble(columnType)) ||
-              (isUUID(filterValue) && columnType == "uuid")
-            )
+            if (isANumberOrUUID(filterValue, columnType))
               s"$filterField = ?"
-            else if (isText(columnType))
-              s"$filterField LIKE ?"
             else
-              s"CAST($filterField AS TEXT) LIKE ?"
+              s"$filterField LIKE ?"
         }
       }
       .mkString("WHERE ", " AND ", " ")
@@ -144,11 +157,11 @@ object DatabaseTablesDAO {
             preparedStatement.setDate(sqlIndex, Date.valueOf(parsedDate))
 
           case _ =>
-            if (filterValue.toIntOption.isDefined && isInt(columnType))
+            if (isInt(filterValue, columnType))
               preparedStatement.setInt(sqlIndex, filterValue.toInt)
-            else if (filterValue.toDoubleOption.isDefined && isDouble(columnType))
+            else if (isDecimal(filterValue, columnType))
               preparedStatement.setDouble(sqlIndex, filterValue.toDouble)
-            else if (isUUID(filterValue) && columnType == "uuid")
+            else if (isUUID(filterValue, columnType))
               preparedStatement.setObject(sqlIndex, UUID.fromString(filterValue))
             else
               preparedStatement.setString(sqlIndex, s"%$filterValue%")
@@ -255,7 +268,7 @@ object DatabaseTablesDAO {
   }
   def create(
       tableName: String,
-      fieldsAndValues: Map[TableColumn, Serializable],
+      fieldsAndValues: Map[TableColumn, FieldValue],
       primaryKeyField: String,
       primaryKeyType: PrimaryKeyDataType = PrimaryKeyDataType.UUID
   )(implicit
@@ -275,7 +288,9 @@ object DatabaseTablesDAO {
     // Postgres: INSERT INTO test_serial (id) VALUES(DEFAULT); MySQL: INSERT INTO table (id) VALUES(NULL)
 
     for (j <- i + 1 to fieldsAndValues.size + i) {
-      val value = fieldsAndValues(fieldsAndValues.keys.toList(j - i - 1))
+      val value = fieldsAndValues(fieldsAndValues.keys.toList(j - i - 1)) match
+        case value: StringValue => value.value
+        case value: ByteArrayValue => value.value
       preparedStatement.setObject(j, value)
     }
     val result = preparedStatement.executeQuery()
@@ -285,7 +300,7 @@ object DatabaseTablesDAO {
 
   def update(
       tableName: String,
-      fieldsAndValues: Map[TableColumn, Serializable],
+      fieldsAndValues: Map[TableColumn, FieldValue],
       primaryKeyField: String,
       primaryKeyValue: String,
       primaryKeyType: PrimaryKeyDataType = PrimaryKeyDataType.UUID
@@ -293,8 +308,11 @@ object DatabaseTablesDAO {
     val sql = QueryBuilder.update(tableName, fieldsAndValues, primaryKeyField)
     val preparedStatement = conn.prepareStatement(sql)
 
-    val notNullData = fieldsAndValues.filterNot { case (_, value) => value == "null" }
-    notNullData.zipWithIndex.foreach { case ((_, value), i) =>
+    val notNullData = fieldsAndValues.filterNot { case (_, value) => value.equals("null") }
+    notNullData.zipWithIndex.foreach { case ((_, fieldValue), i) =>
+      val value = fieldValue match
+        case value: StringValue => value.value
+        case value: ByteArrayValue => value.value
       preparedStatement.setObject(i + 1, value)
     }
     // where ... = ?

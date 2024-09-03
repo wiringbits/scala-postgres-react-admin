@@ -5,6 +5,7 @@ import slinky.core.{BuildingComponent, ExternalComponent}
 import scala.scalajs.js
 import scala.scalajs.js.|
 
+// https://marmelab.com/react-admin/ImageInput.html
 object ImageInput extends ExternalComponent {
   case class Props(
       source: String,
