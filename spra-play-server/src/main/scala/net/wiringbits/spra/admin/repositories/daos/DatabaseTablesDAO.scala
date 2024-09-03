@@ -85,11 +85,10 @@ object DatabaseTablesDAO {
   }
 
   private def isUUID(value: String, columnType: String): Boolean = {
-    val isUUID = Try(UUID.fromString(value)) match {
-      case Success(_) => true
+    Try(UUID.fromString(value)) match {
+      case Success(_) => columnType == "uuid"
       case Failure(_) => false
     }
-    isUUID && columnType == "uuid"
   }
 
   private def isInt(value: String, columnType: String): Boolean = {
@@ -100,7 +99,7 @@ object DatabaseTablesDAO {
     value.toDoubleOption.isDefined && columnTypeIsDouble(columnType)
   }
 
-  private def isANumberOrUUID(value: String, columnType: String): Boolean = {
+  private def isNumberOrUUID(value: String, columnType: String): Boolean = {
     isInt(value, columnType) ||
     isDecimal(value, columnType) ||
     isUUID(value, columnType)
@@ -129,7 +128,7 @@ object DatabaseTablesDAO {
           case dateRegex(_, _, _) if columnType == "date" =>
             s"DATE($filterField) = ?"
           case _ =>
-            if (isANumberOrUUID(filterValue, columnType))
+            if (isNumberOrUUID(filterValue, columnType))
               s"$filterField = ?"
             else
               s"$filterField LIKE ?"
@@ -150,7 +149,10 @@ object DatabaseTablesDAO {
       .foreach { case (FilterParameter(filterField, filterValue), index) =>
         // We have to increment index by 1 because SQL parameterIndex starts in 1
         val sqlIndex = index + 1
-        val columnType = columns.find(_.name.equals(filterField)).getOrElse(TableColumn(filterField, "text")).`type`
+        val columnType = columns.find(_.name == filterField) match {
+          case Some(column) => column.`type`
+          case None => throw Exception(s"Column with name '$filterField' not found.")
+        }
         filterValue match {
           case dateRegex(year, month, day) if columnType == "date" =>
             val parsedDate = LocalDate.of(year.toInt, month.toInt, day.toInt)
@@ -268,7 +270,7 @@ object DatabaseTablesDAO {
   }
   def create(
       tableName: String,
-      fieldsAndValues: Map[TableColumn, FieldValue],
+      fieldsAndValues: Map[TableColumn, FieldValue[_]],
       primaryKeyField: String,
       primaryKeyType: PrimaryKeyDataType = PrimaryKeyDataType.UUID
   )(implicit
@@ -288,9 +290,7 @@ object DatabaseTablesDAO {
     // Postgres: INSERT INTO test_serial (id) VALUES(DEFAULT); MySQL: INSERT INTO table (id) VALUES(NULL)
 
     for (j <- i + 1 to fieldsAndValues.size + i) {
-      val value = fieldsAndValues(fieldsAndValues.keys.toList(j - i - 1)) match
-        case value: StringValue => value.value
-        case value: ByteArrayValue => value.value
+      val value = fieldsAndValues(fieldsAndValues.keys.toList(j - i - 1)).value
       preparedStatement.setObject(j, value)
     }
     val result = preparedStatement.executeQuery()
@@ -300,7 +300,7 @@ object DatabaseTablesDAO {
 
   def update(
       tableName: String,
-      fieldsAndValues: Map[TableColumn, FieldValue],
+      fieldsAndValues: Map[TableColumn, FieldValue[_]],
       primaryKeyField: String,
       primaryKeyValue: String,
       primaryKeyType: PrimaryKeyDataType = PrimaryKeyDataType.UUID
@@ -308,12 +308,9 @@ object DatabaseTablesDAO {
     val sql = QueryBuilder.update(tableName, fieldsAndValues, primaryKeyField)
     val preparedStatement = conn.prepareStatement(sql)
 
-    val notNullData = fieldsAndValues.filterNot { case (_, value) => value.equals("null") }
-    notNullData.zipWithIndex.foreach { case ((_, fieldValue), i) =>
-      val value = fieldValue match
-        case value: StringValue => value.value
-        case value: ByteArrayValue => value.value
-      preparedStatement.setObject(i + 1, value)
+    val notNullData = fieldsAndValues.filterNot { case (_, value) => value.value == "null" }
+    notNullData.zipWithIndex.foreach { case ((_, value), i) =>
+      preparedStatement.setObject(i + 1, value.value)
     }
     // where ... = ?
     setPreparedStatementKey(preparedStatement, primaryKeyValue, primaryKeyType, notNullData.size + 1)

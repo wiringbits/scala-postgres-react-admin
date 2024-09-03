@@ -9,7 +9,7 @@ import scala.collection.mutable
 object QueryBuilder {
   def create(
       tableName: String,
-      fieldsAndValues: Map[TableColumn, FieldValue],
+      fieldsAndValues: Map[TableColumn, FieldValue[_]],
       primaryKeyField: String,
       primaryKeyType: PrimaryKeyDataType = PrimaryKeyDataType.UUID
   ): String = {
@@ -34,10 +34,10 @@ object QueryBuilder {
       |""".stripMargin
   }
 
-  def update(tableName: String, body: Map[TableColumn, FieldValue], primaryKeyField: String): String = {
+  def update(tableName: String, body: Map[TableColumn, FieldValue[_]], primaryKeyField: String): String = {
     val updateStatement = new mutable.StringBuilder("SET")
     for ((tableField, value) <- body) {
-      val resultStatement = if (value.equals("null")) "NULL" else s"?::${tableField.`type`}"
+      val resultStatement = if (value.value == "null") "NULL" else s"?::${tableField.`type`}"
       val statement = s" ${tableField.name} = $resultStatement,"
       updateStatement.append(statement)
     }
