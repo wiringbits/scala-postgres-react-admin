@@ -8,20 +8,20 @@ import scala.scalajs.js.|
 object ImageField extends ExternalComponent {
   case class Props(
       source: String,
+      title: String,
+      sortable: Boolean = false,
       disabled: Boolean = false,
-      sx: js.Dynamic = js.Dynamic.literal(),
-      isRequired: Boolean = false,
-      validate: js.UndefOr[js.Any] = js.undefined
+      sx: js.Dynamic = js.Dynamic.literal()
   )
 
   def apply(
       source: String,
+      title: String = "title",
+      sortable: Boolean = false,
       disabled: Boolean = false,
-      sx: js.Dynamic = js.Dynamic.literal(),
-      isRequired: Boolean = false,
-      validate: js.UndefOr[js.Any] = js.undefined
+      sx: js.Dynamic = js.Dynamic.literal()
   ): BuildingComponent[_, _] = {
-    super.apply(Props(source, disabled, sx, isRequired, validate))
+    super.apply(Props(source, title, sortable, disabled, sx))
   }
 
   override val component: String | js.Object = ReactAdmin.ImageField
