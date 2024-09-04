@@ -6,6 +6,8 @@ import net.wiringbits.spra.admin.repositories.daos.DatabaseTablesDAO
 import net.wiringbits.spra.admin.repositories.models.{DatabaseTable, ForeignKey, TableColumn, TableData}
 import net.wiringbits.spra.admin.utils.models.QueryParameters
 import play.api.db.Database
+import net.wiringbits.spra.admin.models.{ByteArrayValue, StringValue}
+import net.wiringbits.spra.admin.utils.StringParse
 
 import javax.inject.Inject
 import scala.concurrent.Future
@@ -75,7 +77,10 @@ class DatabaseTablesRepository @Inject() (database: Database)(implicit
       val fieldsAndValues = body.map { case (key, value) =>
         val field =
           columns.find(_.name == key).getOrElse(throw new RuntimeException(s"Invalid property in body request: $key"))
-        (field, value)
+        if (field.`type` == "bytea")
+          val byteaValue = StringParse.stringToByteArray(value)
+          (field, ByteArrayValue(byteaValue))
+        else (field, StringValue(value))
       }
       DatabaseTablesDAO.create(
         tableName = tableName,
@@ -100,7 +105,10 @@ class DatabaseTablesRepository @Inject() (database: Database)(implicit
         val fieldsAndValues = bodyWithoutNonEditableColumns.map { case (key, value) =>
           val field =
             columns.find(_.name == key).getOrElse(throw new RuntimeException(s"Invalid property in body request: $key"))
-          (field, value)
+          if (field.`type` == "bytea")
+            val byteaValue = StringParse.stringToByteArray(value)
+            (field, ByteArrayValue(byteaValue))
+          else (field, StringValue(value))
         }
         val primaryKeyType = settings.primaryKeyDataType
         DatabaseTablesDAO.update(

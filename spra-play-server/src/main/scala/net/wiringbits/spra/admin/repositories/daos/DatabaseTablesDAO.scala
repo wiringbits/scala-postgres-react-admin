@@ -5,7 +5,7 @@ import net.wiringbits.spra.admin.config.{CustomDataType, PrimaryKeyDataType, Tab
 import net.wiringbits.spra.admin.repositories.models.*
 import net.wiringbits.spra.admin.utils.models.{FilterParameter, QueryParameters}
 import net.wiringbits.spra.admin.utils.{QueryBuilder, StringRegex}
-
+import net.wiringbits.spra.admin.models.{ByteArrayValue, FieldValue, StringValue}
 import java.sql.{Connection, Date, PreparedStatement, ResultSet}
 import java.time.LocalDate
 import java.util.UUID
@@ -230,7 +230,7 @@ object DatabaseTablesDAO {
   }
   def create(
       tableName: String,
-      fieldsAndValues: Map[TableColumn, String],
+      fieldsAndValues: Map[TableColumn, FieldValue[_]],
       primaryKeyField: String,
       primaryKeyType: PrimaryKeyDataType = PrimaryKeyDataType.UUID
   )(implicit
@@ -250,7 +250,7 @@ object DatabaseTablesDAO {
     // Postgres: INSERT INTO test_serial (id) VALUES(DEFAULT); MySQL: INSERT INTO table (id) VALUES(NULL)
 
     for (j <- i + 1 to fieldsAndValues.size + i) {
-      val value = fieldsAndValues(fieldsAndValues.keys.toList(j - i - 1))
+      val value = fieldsAndValues(fieldsAndValues.keys.toList(j - i - 1)).value
       preparedStatement.setObject(j, value)
     }
     val result = preparedStatement.executeQuery()
@@ -260,7 +260,7 @@ object DatabaseTablesDAO {
 
   def update(
       tableName: String,
-      fieldsAndValues: Map[TableColumn, String],
+      fieldsAndValues: Map[TableColumn, FieldValue[_]],
       primaryKeyField: String,
       primaryKeyValue: String,
       primaryKeyType: PrimaryKeyDataType = PrimaryKeyDataType.UUID
@@ -268,9 +268,9 @@ object DatabaseTablesDAO {
     val sql = QueryBuilder.update(tableName, fieldsAndValues, primaryKeyField)
     val preparedStatement = conn.prepareStatement(sql)
 
-    val notNullData = fieldsAndValues.filterNot { case (_, value) => value == "null" }
+    val notNullData = fieldsAndValues.filterNot { case (_, value) => value.value == "null" }
     notNullData.zipWithIndex.foreach { case ((_, value), i) =>
-      preparedStatement.setObject(i + 1, value)
+      preparedStatement.setObject(i + 1, value.value)
     }
     // where ... = ?
     setPreparedStatementKey(preparedStatement, primaryKeyValue, primaryKeyType, notNullData.size + 1)

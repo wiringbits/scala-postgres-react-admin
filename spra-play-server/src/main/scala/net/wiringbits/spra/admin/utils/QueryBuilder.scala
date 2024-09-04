@@ -2,13 +2,13 @@ package net.wiringbits.spra.admin.utils
 
 import net.wiringbits.spra.admin.config.PrimaryKeyDataType
 import net.wiringbits.spra.admin.repositories.models.TableColumn
-
+import net.wiringbits.spra.admin.models.FieldValue
 import scala.collection.mutable
 
 object QueryBuilder {
   def create(
       tableName: String,
-      fieldsAndValues: Map[TableColumn, String],
+      fieldsAndValues: Map[TableColumn, FieldValue[_]],
       primaryKeyField: String,
       primaryKeyType: PrimaryKeyDataType = PrimaryKeyDataType.UUID
   ): String = {
@@ -33,10 +33,10 @@ object QueryBuilder {
       |""".stripMargin
   }
 
-  def update(tableName: String, body: Map[TableColumn, String], primaryKeyField: String): String = {
+  def update(tableName: String, body: Map[TableColumn, FieldValue[_]], primaryKeyField: String): String = {
     val updateStatement = new mutable.StringBuilder("SET")
     for ((tableField, value) <- body) {
-      val resultStatement = if (value == "null") "NULL" else s"?::${tableField.`type`}"
+      val resultStatement = if (value.value == "null") "NULL" else s"?::${tableField.`type`}"
       val statement = s" ${tableField.name} = $resultStatement,"
       updateStatement.append(statement)
     }
