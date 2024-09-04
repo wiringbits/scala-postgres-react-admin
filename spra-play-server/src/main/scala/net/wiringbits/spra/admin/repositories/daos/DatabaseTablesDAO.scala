@@ -10,8 +10,7 @@ import java.sql.{Connection, Date, PreparedStatement, ResultSet}
 import java.time.LocalDate
 import java.util.UUID
 import scala.collection.mutable.ListBuffer
-import scala.util.Try
-
+import scala.util.{Failure, Success, Try}
 object DatabaseTablesDAO {
 
   def all(schema: String = "public")(implicit conn: Connection): List[DatabaseTable] = {
@@ -73,6 +72,37 @@ object DatabaseTablesDAO {
     """.as(foreignKeyParser.*)
   }
 
+  private def columnTypeIsDouble(columnType: String): Boolean = {
+    // 'contains' is used because PostgreSQL types may include additional details like precision or scale
+    // https://www.postgresql.org/docs/8.1/datatype.html
+    List("float", "decimal").exists(columnType.contains)
+  }
+
+  private def columnTypeIsInt(columnType: String): Boolean = {
+    List("int", "serial").exists(columnType.contains)
+  }
+
+  private def isUUID(value: String, columnType: String): Boolean = {
+    Try(UUID.fromString(value)) match {
+      case Success(_) => columnType == "uuid"
+      case Failure(_) => false
+    }
+  }
+
+  private def isInt(value: String, columnType: String): Boolean = {
+    value.toIntOption.isDefined && columnTypeIsInt(columnType)
+  }
+
+  private def isDecimal(value: String, columnType: String): Boolean = {
+    value.toDoubleOption.isDefined && columnTypeIsDouble(columnType)
+  }
+
+  private def isNumberOrUUID(value: String, columnType: String): Boolean = {
+    isInt(value, columnType) ||
+    isDecimal(value, columnType) ||
+    isUUID(value, columnType)
+  }
+
   def getTableData(
       settings: TableSettings,
       columns: List[TableColumn],
@@ -88,12 +118,16 @@ object DatabaseTablesDAO {
 
     val conditionsSql = queryParameters.filters
       .map { case FilterParameter(filterField, filterValue) =>
+        val columnType = columns.find(_.name == filterField) match {
+          case Some(column) => column.`type`
+          case None => throw Exception(s"Column with name '$filterField' not found.")
+        }
         filterValue match {
-          case dateRegex(_, _, _) =>
+          case dateRegex(_, _, _) if columnType == "date" =>
             s"DATE($filterField) = ?"
 
           case _ =>
-            if (filterValue.toIntOption.isDefined || filterValue.toDoubleOption.isDefined)
+            if (isNumberOrUUID(filterValue, columnType))
               s"$filterField = ?"
             else
               s"$filterField LIKE ?"
@@ -111,20 +145,25 @@ object DatabaseTablesDAO {
     val preparedStatement = conn.prepareStatement(sql)
 
     queryParameters.filters.zipWithIndex
-      .foreach { case (FilterParameter(_, filterValue), index) =>
+      .foreach { case (FilterParameter(filterField, filterValue), index) =>
         // We have to increment index by 1 because SQL parameterIndex starts in 1
         val sqlIndex = index + 1
-
+        val columnType = columns.find(_.name == filterField) match {
+          case Some(column) => column.`type`
+          case None => throw Exception(s"Column with name '$filterField' not found.")
+        }
         filterValue match {
           case dateRegex(year, month, day) =>
             val parsedDate = LocalDate.of(year.toInt, month.toInt, day.toInt)
             preparedStatement.setDate(sqlIndex, Date.valueOf(parsedDate))
 
           case _ =>
-            if (filterValue.toIntOption.isDefined)
+            if (isInt(filterValue, columnType))
               preparedStatement.setInt(sqlIndex, filterValue.toInt)
-            else if (filterValue.toDoubleOption.isDefined)
+            else if (isDecimal(filterValue, columnType))
               preparedStatement.setDouble(sqlIndex, filterValue.toDouble)
+            else if (isUUID(filterValue, columnType))
+              preparedStatement.setObject(sqlIndex, UUID.fromString(filterValue))
             else
               preparedStatement.setString(sqlIndex, s"%$filterValue%")
         }
