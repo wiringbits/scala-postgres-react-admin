@@ -268,9 +268,9 @@ object DatabaseTablesDAO {
     val sql = QueryBuilder.update(tableName, fieldsAndValues, primaryKeyField)
     val preparedStatement = conn.prepareStatement(sql)
 
-    val notNullData = fieldsAndValues.filterNot { case (_, value) => value.value == "null" }
-    notNullData.zipWithIndex.foreach { case ((_, value), i) =>
-      preparedStatement.setObject(i + 1, value.value)
+    val notNullData = fieldsAndValues.filterNot { case (_, field) => field.value == "null" }
+    notNullData.zipWithIndex.foreach { case ((_, field), i) =>
+      preparedStatement.setObject(i + 1, field.value)
     }
     // where ... = ?
     setPreparedStatementKey(preparedStatement, primaryKeyValue, primaryKeyType, notNullData.size + 1)

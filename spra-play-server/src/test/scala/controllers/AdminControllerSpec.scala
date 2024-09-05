@@ -39,6 +39,10 @@ class AdminControllerSpec extends PlayPostgresSpec with AdminUtils {
       tableName = "big_serial_table_overflow",
       primaryKeyField = "id",
       primaryKeyDataType = PrimaryKeyDataType.BigSerial
+    ),
+    TableSettings(
+      tableName = "bytea_table",
+      primaryKeyField = "id"
     )
   )
   val dataExplorerConfig: DataExplorerConfig = DataExplorerConfig("http://localhost:9000", dataExplorerConfigTables)
@@ -50,6 +54,7 @@ class AdminControllerSpec extends PlayPostgresSpec with AdminUtils {
   def bigSerialSettings: TableSettings = dataExplorerConfig.tablesSettings(4)
   def serialOverflowSettings: TableSettings = dataExplorerConfig.tablesSettings(5)
   def bigSerialOverflowSettings: TableSettings = dataExplorerConfig.tablesSettings(6)
+  def byteaSettings: TableSettings = dataExplorerConfig.tablesSettings(7)
 
   def isValidUUID(str: String): Boolean = {
     if (str == null) return false
@@ -70,12 +75,13 @@ class AdminControllerSpec extends PlayPostgresSpec with AdminUtils {
     "return tables from modules" in withApiClient { client =>
       val response = client.getTables.futureValue
       response.data.map(_.name) match
-        case List(users, userLogs, uuidTable, serialTable, bigSerialTable, _, _) =>
+        case List(users, userLogs, uuidTable, serialTable, bigSerialTable, _, _, byteaTable) =>
           users must be(usersSettings.tableName)
           userLogs must be(userLogsSettings.tableName)
           uuidTable must be(uuidSettings.tableName)
           serialTable must be(serialSettings.tableName)
           bigSerialTable must be(bigSerialSettings.tableName)
+          byteaTable must be(byteaSettings.tableName)
         case list => fail(s"Unexpected response: ${list.mkString(", ")}")
     }
 
@@ -135,6 +141,17 @@ class AdminControllerSpec extends PlayPostgresSpec with AdminUtils {
       bigSerialSettings.filterableColumns must be(List.empty)
       bigSerialSettings.createSettings.nonRequiredColumns must be(List.empty)
       bigSerialSettings.createSettings.requiredColumns must be(List.empty)
+
+      val head6 = response.data(5)
+      head6.primaryKeyName must be(byteaSettings.primaryKeyField)
+      byteaSettings.referenceField must be(None)
+      byteaSettings.hiddenColumns must be(List.empty)
+      byteaSettings.nonEditableColumns must be(List.empty)
+      byteaSettings.canBeDeleted must be(true)
+      byteaSettings.columnTypeOverrides must be(Map.empty)
+      byteaSettings.filterableColumns must be(List.empty)
+      byteaSettings.createSettings.nonRequiredColumns must be(List.empty)
+      byteaSettings.createSettings.requiredColumns must be(List.empty)
     }
   }
 
@@ -680,7 +697,7 @@ class AdminControllerSpec extends PlayPostgresSpec with AdminUtils {
 
       responseMetadata.head.nonEmpty mustBe true
     }
-    
+
     "return new user id" in withApiClient { implicit client =>
       val user = createUser.futureValue
       val response = client.getTableMetadata(usersSettings.tableName, List("name", "ASC"), List(0, 9), "{}").futureValue
@@ -737,6 +754,18 @@ class AdminControllerSpec extends PlayPostgresSpec with AdminUtils {
         s"ERROR: nextval: reached maximum value of sequence \"big_serial_table_overflow_seq\" (9223372036854775807)"
       )
     }
+
+    "create a new bytea" in withApiClient { implicit client =>
+      val stringBytea = "[0, 10, 20, 30]"
+      // The response returns the bytea as Hex; this would be its equivalent in Hex.
+      val correctValue = "\\x000a141e"
+      val request = AdminCreateTable.Request(Map("data" -> stringBytea))
+      val byteaId = client.createItem(byteaSettings.tableName, request).futureValue.id
+
+      val response = client.viewItem(byteaSettings.tableName, byteaId).futureValue
+      val dataResponse = response.find(_._1 == "data").value._2
+      dataResponse must be(correctValue)
+    }
   }
 
   "fail when field in request doesn't exists" in withApiClient { client =>
@@ -777,6 +806,22 @@ class AdminControllerSpec extends PlayPostgresSpec with AdminUtils {
       val emailResponse = newResponse.find(_._1 == "email").value._2
       updateResponse.id must be(userId)
       emailResponse must be(email)
+    }
+
+    "update a new bytea" in withApiClient { client =>
+      val request = AdminCreateTable.Request(Map("data" -> "[10, 10, 10, 10]"))
+      val byteaId = client.createItem(byteaSettings.tableName, request).futureValue.id
+
+      val stringBytea = "[0, 10, 20, 30]"
+      // The response returns the bytea as Hex; this would be its equivalent in Hex.
+      val correctValue = "\\x000a141e"
+      val updateRequest = AdminUpdateTable.Request(Map("data" -> stringBytea))
+      val updateResponse = client.updateItem(byteaSettings.tableName, byteaId, updateRequest).futureValue
+
+      val newResponse = client.viewItem(byteaSettings.tableName, byteaId).futureValue
+      val dataResponse = newResponse.find(_._1 == "data").value._2
+      updateResponse.id must be(byteaId)
+      dataResponse must be(correctValue)
     }
 
     "update a new row for all tables" in withApiClient { client =>

@@ -1,6 +1,6 @@
 package net.wiringbits.spra.admin.models
 
-trait FieldValue[T] extends Serializable {
+sealed trait FieldValue[T] extends Serializable {
   val value: T
 }
 

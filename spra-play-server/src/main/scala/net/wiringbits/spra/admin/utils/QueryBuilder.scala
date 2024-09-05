@@ -35,8 +35,8 @@ object QueryBuilder {
 
   def update(tableName: String, body: Map[TableColumn, FieldValue[_]], primaryKeyField: String): String = {
     val updateStatement = new mutable.StringBuilder("SET")
-    for ((tableField, value) <- body) {
-      val resultStatement = if (value.value == "null") "NULL" else s"?::${tableField.`type`}"
+    for ((tableField, field) <- body) {
+      val resultStatement = if (field.value == "null") "NULL" else s"?::${tableField.`type`}"
       val statement = s" ${tableField.name} = $resultStatement,"
       updateStatement.append(statement)
     }
