@@ -20,7 +20,7 @@ object ListGuesser {
   val component: FunctionalComponent[Props] = FunctionalComponent[Props] { props =>
     val fields = ResponseGuesser.getTypesFromResponse(props.response)
 
-    def defaultField(reference: String, source: String)(children: ReactElement*): ReactElement =
+    def defaultField(reference: String, source: String)(children: ReactElement): ReactElement =
       ReferenceField(reference = reference, source = source)(children)
 
     val widgetFields: Seq[ReactElement] = fields.map { field =>
@@ -49,7 +49,14 @@ object ListGuesser {
         case ColumnType.Image => Fragment()
         case ColumnType.Number => NumberInput(source = field.name)
         case ColumnType.Reference(reference, source) =>
-          defaultField(reference, field.name)(TextField(source = source))
+          ReferenceInput(
+            source = field.name,
+            reference = reference
+          )(
+            SelectInput(
+              optionText = props.response.referenceDisplayField.getOrElse(source)
+            )
+          )
       }
     }
 
