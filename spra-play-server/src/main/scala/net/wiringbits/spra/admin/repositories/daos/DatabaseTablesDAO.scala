@@ -82,6 +82,10 @@ object DatabaseTablesDAO {
     List("int", "serial").exists(columnType.contains)
   }
 
+  private def columnTypeIsDate(columnType: String): Boolean = {
+    List("date", "time").exists(columnType.contains)
+  }
+
   private def isUUID(value: String, columnType: String): Boolean = {
     Try(UUID.fromString(value)) match {
       case Success(_) => columnType == "uuid"
@@ -123,9 +127,8 @@ object DatabaseTablesDAO {
           case None => throw Exception(s"Column with name '$filterField' not found.")
         }
         filterValue match {
-          case dateRegex(_, _, _) if columnType == "date" =>
+          case dateRegex(_, _, _) if columnTypeIsDate(columnType) =>
             s"DATE($filterField) = ?"
-
           case _ =>
             if (isNumberOrUUID(filterValue, columnType))
               s"$filterField = ?"
@@ -153,7 +156,7 @@ object DatabaseTablesDAO {
           case None => throw Exception(s"Column with name '$filterField' not found.")
         }
         filterValue match {
-          case dateRegex(year, month, day) =>
+          case dateRegex(year, month, day) if columnTypeIsDate(columnType) =>
             val parsedDate = LocalDate.of(year.toInt, month.toInt, day.toInt)
             preparedStatement.setDate(sqlIndex, Date.valueOf(parsedDate))
 
