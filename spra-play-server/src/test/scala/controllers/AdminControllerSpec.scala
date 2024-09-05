@@ -680,7 +680,7 @@ class AdminControllerSpec extends PlayPostgresSpec with AdminUtils {
 
       responseMetadata.head.nonEmpty mustBe true
     }
-    
+
     "return new user id" in withApiClient { implicit client =>
       val user = createUser.futureValue
       val response = client.getTableMetadata(usersSettings.tableName, List("name", "ASC"), List(0, 9), "{}").futureValue
