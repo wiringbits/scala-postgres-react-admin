@@ -770,7 +770,7 @@ class AdminControllerSpec extends PlayPostgresSpec with AdminUtils {
     }
 
     "don't fail if we send a null in an optional parameter" in withApiClient { client =>
-      val json = """{"name":"wiringbits","email":null,"password":"wiringbits"}"""
+      val json = """{"name":"wiringbits","last_name":null,"email":"test@wiringbits.net","password":"wiringbits"}"""
       val path = s"/admin/tables/${usersSettings.tableName}"
       val response = POST(path, json).futureValue
       response.header.status mustBe 200
@@ -779,6 +779,7 @@ class AdminControllerSpec extends PlayPostgresSpec with AdminUtils {
         client.getTableMetadata(usersSettings.tableName, List("name", "ASC"), List(0, 9), "{}").futureValue
 
       responseMetadata.head.nonEmpty mustBe true
+      responseMetadata.head("last_name") mustBe ""
     }
 
     "return new user id" in withApiClient { implicit client =>
@@ -902,15 +903,17 @@ class AdminControllerSpec extends PlayPostgresSpec with AdminUtils {
 
     "don't fail if we send a null in an optional parameter" in withApiClient { client =>
       val name = "wiringbits"
+      val lastName = "test"
       val email = "test@wiringbits.net"
       val password = "wiringbits"
-      val request = AdminCreateTable.Request(Map("name" -> name, "email" -> email, "password" -> password))
+      val request =
+        AdminCreateTable.Request(Map("name" -> name, "last_name" -> lastName, "email" -> email, "password" -> password))
       client.createItem("users", request).futureValue
       val responseMetadata1 =
         client.getTableMetadata(usersSettings.tableName, List("name", "ASC"), List(0, 9), "{}").futureValue
       val id = responseMetadata1.head("id")
 
-      val json = """{"email":null}"""
+      val json = """{"last_name":"null"}"""
       val path = s"/admin/tables/${usersSettings.tableName}/$id"
       val response = PUT(path, json).futureValue
       response.header.status mustBe 200
@@ -918,7 +921,7 @@ class AdminControllerSpec extends PlayPostgresSpec with AdminUtils {
       val responseMetadata2 =
         client.getTableMetadata(usersSettings.tableName, List("name", "ASC"), List(0, 9), "{}").futureValue
 
-      responseMetadata2.head("email") mustBe ""
+      responseMetadata2.head("last_name") mustBe ""
     }
 
     "fail if the field in body doesn't exists" in withApiClient { client =>
