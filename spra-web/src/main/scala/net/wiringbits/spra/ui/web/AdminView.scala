@@ -3,7 +3,7 @@ package net.wiringbits.spra.ui.web
 import net.wiringbits.spra.api.models.AdminGetTables
 import net.wiringbits.spra.ui.web.components.{CreateGuesser, EditGuesser, ListGuesser}
 import net.wiringbits.spra.ui.web.facades.reactadmin.{Admin, Resource}
-import net.wiringbits.spra.ui.web.facades.simpleRestProvider
+import net.wiringbits.spra.ui.web.facades.createDataProvider
 import net.wiringbits.spra.ui.web.models.DataExplorerSettings
 import org.scalajs.macrotaskexecutor.MacrotaskExecutor.Implicits.global
 import slinky.core.facade.{Hooks, ReactElement}
@@ -52,7 +52,7 @@ object AdminView {
     }
 
     div()(
-      Admin(simpleRestProvider(tablesUrl))(buildResources),
+      Admin(createDataProvider(tablesUrl))(buildResources),
       error.map(h1(_))
     )
   }
