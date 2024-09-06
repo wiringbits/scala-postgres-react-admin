@@ -24,16 +24,17 @@ object Images {
   }
 
   def convertHexToImage(imageHex: String): String = {
-    // Remove the "0x" prefix from the hex string, as it's not part of the actual image data
+    // Check if the argument is a hexadecimal string"
+    if (!imageHex.startsWith("\\x") || (imageHex.length % 2) == 1) {
+      throw new IllegalArgumentException(s"Error: Expected a hexadecimal string but found: $imageHex")
+    }
+    // Remove the "\x" prefix from the hex string, as it's not part of the actual image data
     val hex = imageHex.tail.tail
     val imageBinary: Array[Byte] =
-      if ((hex.length % 2) == 1)
-        Array.empty
-      else
-        Try(hex.grouped(2).map { hex => Integer.parseInt(hex, 16).toByte }.toArray) match {
-          case Success(value) => value
-          case Failure(_) => Array.empty
-        }
+      Try(hex.grouped(2).map { hex => Integer.parseInt(hex, 16).toByte }.toArray) match {
+        case Success(value) => value
+        case Failure(_) => Array.empty
+      }
     val byteArray = Uint8Array(js.Array(imageBinary.map(_.toShort): _*))
     dom.URL.createObjectURL(dom.Blob(js.Array(byteArray.buffer)))
   }
