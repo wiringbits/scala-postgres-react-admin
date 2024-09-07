@@ -29,7 +29,7 @@ object CreateGuesser {
             case ColumnType.Email =>
               TextInput(source = field.name, isRequired = isRequired, validate = required)
             case ColumnType.Image =>
-              ImageField(source = field.name, isRequired = isRequired, validate = required)
+              ImageInput(source = field.name, isRequired = isRequired, validate = required)(ImageField(source = "src"))
             case ColumnType.Number =>
               NumberInput(source = field.name, isRequired = isRequired, validate = required)
             case ColumnType.Reference(reference, source) =>
