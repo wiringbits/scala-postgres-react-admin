@@ -2,7 +2,6 @@ package net.wiringbits.spra.ui.web.utils
 
 import org.scalajs.dom
 import org.scalajs.dom.{Blob, File}
-import scala.util.{Failure, Success, Try}
 import scala.scalajs.js.Promise
 import scala.scalajs.js.typedarray.{ArrayBuffer, Int8Array, Uint8Array}
 import scala.scalajs.js
@@ -24,17 +23,7 @@ object Images {
   }
 
   def convertHexToImage(imageHex: String): String = {
-    // Check if the argument is a hexadecimal string"
-    if (!imageHex.startsWith("\\x") || (imageHex.length % 2) == 1) {
-      throw new IllegalArgumentException(s"Error: Expected a hexadecimal string but found: $imageHex")
-    }
-    // Remove the "\x" prefix from the hex string, as it's not part of the actual image data
-    val hex = imageHex.tail.tail
-    val imageBinary: Array[Byte] =
-      Try(hex.grouped(2).map { hex => Integer.parseInt(hex, 16).toByte }.toArray) match {
-        case Success(value) => value
-        case Failure(_) => Array.empty
-      }
+    val imageBinary: Array[Byte] = ParseHexString.toByteArray(imageHex)
     val byteArray = Uint8Array(js.Array(imageBinary.map(_.toShort): _*))
     dom.URL.createObjectURL(dom.Blob(js.Array(byteArray.buffer)))
   }
