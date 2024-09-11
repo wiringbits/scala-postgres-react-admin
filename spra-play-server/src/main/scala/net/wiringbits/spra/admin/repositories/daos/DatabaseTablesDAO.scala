@@ -2,6 +2,7 @@ package net.wiringbits.spra.admin.repositories.daos
 
 import anorm.{SqlParser, SqlStringInterpolation}
 import net.wiringbits.spra.admin.config.{CustomDataType, PrimaryKeyDataType, TableSettings}
+import net.wiringbits.spra.admin.models.ColumnType
 import net.wiringbits.spra.admin.repositories.models.*
 import net.wiringbits.spra.admin.utils.models.{FilterParameter, QueryParameters}
 import net.wiringbits.spra.admin.utils.{QueryBuilder, StringRegex}
@@ -38,7 +39,7 @@ object DatabaseTablesDAO {
         val fields = for {
           columnNumber <- 1 to numberOfColumns
           columnName = metadata.getColumnName(columnNumber)
-          columnType = metadata.getColumnTypeName(columnNumber)
+          columnType = ColumnType.parseColumnType(metadata.getColumnTypeName(columnNumber))
         } yield TableColumn(columnName, columnType)
         fields.toList
       } finally {

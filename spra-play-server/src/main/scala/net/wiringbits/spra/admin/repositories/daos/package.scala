@@ -1,6 +1,8 @@
 package net.wiringbits.spra.admin.repositories
 
 import anorm.*
+import anorm.SqlParser.get
+import net.wiringbits.spra.admin.models.ColumnType
 import net.wiringbits.spra.admin.repositories.models.{DatabaseTable, ForeignKey, TableColumn}
 
 package object daos {
@@ -28,10 +30,13 @@ package object daos {
   }
 
   val tableColumnParser: RowParser[TableColumn] = {
-    Macro.parser[TableColumn](
-      "column_name",
-      "data_type"
-    )
+    get[String]("column_name") ~
+      get[String]("data_type") map { case name ~ columnTypeStr =>
+        TableColumn(
+          name = name,
+          `type` = ColumnType.parseColumnType(columnTypeStr)
+        )
+      }
   }
 
   val foreignKeyParser: RowParser[ForeignKey] = {

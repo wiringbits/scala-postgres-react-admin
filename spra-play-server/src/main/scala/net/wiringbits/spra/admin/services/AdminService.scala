@@ -66,7 +66,7 @@ class AdminService @Inject() (
                   None
               AdminGetTables.Response.TableColumn(
                 name = fieldName,
-                `type` = column.`type`,
+                `type` = column.`type`.value,
                 editable = isEditable,
                 reference = reference,
                 filterable = isFilterable,
