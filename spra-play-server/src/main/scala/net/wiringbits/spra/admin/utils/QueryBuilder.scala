@@ -20,7 +20,7 @@ object QueryBuilder {
     }
     for ((tableColumn, _) <- fieldsAndValues) {
       sqlFields.append(s", ${tableColumn.name}")
-      sqlValues.append(s", ?::${tableColumn.`type`}")
+      sqlValues.append(s", ?::${tableColumn.`type`.value}")
     }
 
     s"""
@@ -36,7 +36,7 @@ object QueryBuilder {
   def update(tableName: String, body: Map[TableColumn, String], primaryKeyField: String): String = {
     val updateStatement = new mutable.StringBuilder("SET")
     for ((tableField, value) <- body) {
-      val resultStatement = if (value == "null") "NULL" else s"?::${tableField.`type`}"
+      val resultStatement = if (value == "null") "NULL" else s"?::${tableField.`type`.value}"
       val statement = s" ${tableField.name} = $resultStatement,"
       updateStatement.append(statement)
     }
