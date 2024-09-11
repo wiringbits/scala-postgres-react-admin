@@ -532,6 +532,106 @@ class AdminControllerSpec extends PlayPostgresSpec with AdminUtils {
         .futureValue
       response.headOption.isEmpty must be(true)
     }
+
+    "don't fail when the column is citext or similar, but the value can be interpreted as Int." in withApiClient {
+      client =>
+        val name = "wiringbits"
+        val email = "test17@wiringbits.net"
+        val request = AdminCreateTable.Request(
+          Map("name" -> name, "email" -> email, "password" -> "wiringbits")
+        )
+        client.createItem(usersSettings.tableName, request).futureValue
+
+        val response = client
+          .getTableMetadata(
+            usersSettings.tableName,
+            List("email", "ASC"),
+            List(0, 9),
+            """{"email":"17"}"""
+          )
+          .futureValue
+        val head = response.headOption.value
+        val nameValue = head.find(_._1 == "name").value._2
+        val emailValue = head.find(_._1 == "email").value._2
+        response.size must be(1)
+        name must be(nameValue)
+        email must be(emailValue)
+    }
+
+    "don't fail when the column is citext or similar, but the value can be interpreted as Decimal." in withApiClient {
+      client =>
+        val name = "wiringbits"
+        val email = "test17.10@wiringbits.net"
+        val request = AdminCreateTable.Request(
+          Map("name" -> name, "email" -> email, "password" -> "wiringbits")
+        )
+        client.createItem(usersSettings.tableName, request).futureValue
+
+        val response = client
+          .getTableMetadata(
+            usersSettings.tableName,
+            List("email", "ASC"),
+            List(0, 9),
+            """{"email":"17.10"}"""
+          )
+          .futureValue
+        val head = response.headOption.value
+        val nameValue = head.find(_._1 == "name").value._2
+        val emailValue = head.find(_._1 == "email").value._2
+        response.size must be(1)
+        name must be(nameValue)
+        email must be(emailValue)
+    }
+
+    "don't fail when the column is citext or similar, but the value can be interpreted as Date." in withApiClient {
+      client =>
+        val name = "wiringbits"
+        val email = "test2024-06-06@wiringbits.net"
+        val request = AdminCreateTable.Request(
+          Map("name" -> name, "email" -> email, "password" -> "wiringbits")
+        )
+        client.createItem(usersSettings.tableName, request).futureValue
+
+        val response = client
+          .getTableMetadata(
+            usersSettings.tableName,
+            List("email", "ASC"),
+            List(0, 9),
+            """{"email":"2024-06"}"""
+          )
+          .futureValue
+        val head = response.headOption.value
+        val nameValue = head.find(_._1 == "name").value._2
+        val emailValue = head.find(_._1 == "email").value._2
+        response.size must be(1)
+        name must be(nameValue)
+        email must be(emailValue)
+    }
+
+    "don't fail when the column is citext or similar, but the value can be interpreted as UUID." in withApiClient {
+      client =>
+        val name = "wiringbits"
+        val email = "8c861a28-e384-4a9b-b7c2-a0367aa3f3e8@wiringbits.net"
+        val request = AdminCreateTable.Request(
+          Map("name" -> name, "email" -> email, "password" -> "wiringbits")
+        )
+        client.createItem(usersSettings.tableName, request).futureValue
+
+        val response = client
+          .getTableMetadata(
+            usersSettings.tableName,
+            List("name", "ASC"),
+            List(0, 9),
+            """{"email":"8c861a28-e384-4a9b-b7c2-a0367aa3f3e8"}"""
+          )
+          .futureValue
+        val head = response.headOption.value
+        val nameValue = head.find(_._1 == "name").value._2
+        val emailValue = head.find(_._1 == "email").value._2
+        response.size must be(1)
+        name must be(nameValue)
+        email must be(emailValue)
+    }
   }
 
   "GET /admin/tables/:tableName/:primaryKey" should {
