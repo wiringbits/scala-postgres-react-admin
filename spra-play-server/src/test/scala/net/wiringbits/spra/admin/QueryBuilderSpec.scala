@@ -1,5 +1,6 @@
 package net.wiringbits.spra.admin
 
+import net.wiringbits.spra.admin.models.{FieldValue, StringValue}
 import net.wiringbits.spra.admin.repositories.models.TableColumn
 import net.wiringbits.spra.admin.utils.QueryBuilder
 import org.scalatest.matchers.must.Matchers.{be, must}
@@ -20,7 +21,10 @@ class QueryBuilderSpec extends AnyWordSpec {
           |""".stripMargin
       val tableName = "users"
       val body =
-        Map(TableColumn("email", "citext") -> "wiringbits@wiringbits.net", TableColumn("name", "text") -> "wiringbits")
+        Map(
+          TableColumn("email", "citext") -> StringValue("wiringbits@wiringbits.net"),
+          TableColumn("name", "text") -> StringValue("wiringbits")
+        )
       val primaryKeyField = "user_id"
 
       val response = QueryBuilder.create(tableName, body, primaryKeyField)
@@ -40,7 +44,7 @@ class QueryBuilderSpec extends AnyWordSpec {
           |RETURNING user_id::TEXT
           |""".stripMargin
       val tableName = "users"
-      val body = Map.empty[TableColumn, String]
+      val body = Map.empty[TableColumn, FieldValue[_]]
       val primaryKeyField = "user_id"
 
       val response = QueryBuilder.create(tableName, body, primaryKeyField)
@@ -58,8 +62,8 @@ class QueryBuilderSpec extends AnyWordSpec {
       |""".stripMargin
       val tableName = "users"
       val body = Map(
-        TableColumn("email", "citext") -> "wiringbits@wiringbits.net",
-        TableColumn("name", "text") -> "wiringbits@wiringbits.net"
+        TableColumn("email", "citext") -> StringValue("wiringbits@wiringbits.net"),
+        TableColumn("name", "text") -> StringValue("wiringbits@wiringbits.net")
       )
       val primaryKeyField = "user_id"
 
@@ -76,9 +80,9 @@ class QueryBuilderSpec extends AnyWordSpec {
            |""".stripMargin
       val tableName = "users"
       val body = Map(
-        TableColumn("email", "citext") -> "wiringbits@wiringbits.net",
-        TableColumn("name", "text") -> "wiringbits@wiringbits.net",
-        TableColumn("phone_number", "text") -> "null"
+        TableColumn("email", "citext") -> StringValue("wiringbits@wiringbits.net"),
+        TableColumn("name", "text") -> StringValue("wiringbits@wiringbits.net"),
+        TableColumn("phone_number", "text") -> StringValue("null")
       )
       val primaryKeyField = "user_id"
 
