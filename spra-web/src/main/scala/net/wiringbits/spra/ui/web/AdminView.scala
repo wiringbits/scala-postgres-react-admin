@@ -3,13 +3,12 @@ package net.wiringbits.spra.ui.web
 import net.wiringbits.spra.api.models.AdminGetTables
 import net.wiringbits.spra.ui.web.components.{CreateGuesser, EditGuesser, ListGuesser}
 import net.wiringbits.spra.ui.web.facades.reactadmin.{Admin, Resource}
-import net.wiringbits.spra.ui.web.facades.simpleRestProvider
+import net.wiringbits.spra.ui.web.facades.createDataProvider
 import net.wiringbits.spra.ui.web.models.DataExplorerSettings
 import org.scalajs.macrotaskexecutor.MacrotaskExecutor.Implicits.global
 import slinky.core.facade.{Hooks, ReactElement}
 import slinky.core.{FunctionalComponent, KeyAddingStage}
 import slinky.web.html.{div, h1}
-
 import scala.util.{Failure, Success}
 
 object AdminView {
@@ -52,7 +51,7 @@ object AdminView {
     }
 
     div()(
-      Admin(simpleRestProvider(tablesUrl))(buildResources),
+      Admin(createDataProvider(tablesUrl))(buildResources),
       error.map(h1(_))
     )
   }
